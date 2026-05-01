@@ -2,9 +2,10 @@ import * as React from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { MobileFrame } from "@/components/MobileFrame";
 import { SectionHeader } from "@/components/primitives";
+import { Sparkline, type SparkPoint } from "@/components/Sparkline";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
-import { Copy, Loader2, Plus, RefreshCw, Users } from "lucide-react";
+import { Copy, Loader2, Plus, RefreshCw, Users, AlertCircle, ClipboardList } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/coach/")({
