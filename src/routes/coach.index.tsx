@@ -96,6 +96,24 @@ function CoachHome() {
     void loadTeam();
   }, [loadTeam]);
 
+  // Section 7 — realtime pulse: refresh squad when athletes log set_completions
+  React.useEffect(() => {
+    if (!team) return;
+    const channel = supabase
+      .channel(`coach-pulse-${team.id}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "set_completions" },
+        () => {
+          void loadTeam();
+        },
+      )
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [team, loadTeam]);
+
   const regenerate = async () => {
     if (!team) return;
     const { data: rpc } = await supabase.rpc("generate_join_code");
