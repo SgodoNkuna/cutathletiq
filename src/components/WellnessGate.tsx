@@ -24,21 +24,36 @@ export function WellnessGate() {
     const dismissed = typeof window !== "undefined" && localStorage.getItem(STORAGE_KEY(profile.id));
     if (dismissed) return;
     void (async () => {
-      const { data } = await supabase
-        .from("wellness_checkins")
-        .select("id")
-        .eq("athlete_id", profile.id)
-        .eq("checkin_date", today)
-        .maybeSingle();
-      if (!data) setOpen(true);
+      const [{ data: wellness }, { data: skip }] = await Promise.all([
+        supabase
+          .from("wellness_checkins")
+          .select("id")
+          .eq("athlete_id", profile.id)
+          .eq("checkin_date", today)
+          .maybeSingle(),
+        (supabase as any)
+          .from("wellness_skips")
+          .select("id")
+          .eq("athlete_id", profile.id)
+          .eq("skip_date", today)
+          .maybeSingle(),
+      ]);
+      if (!wellness && !skip) setOpen(true);
     })();
   }, [profile]);
 
   if (!open || !profile) return null;
 
-  const close = () => {
+  const close = async () => {
     localStorage.setItem(STORAGE_KEY(profile.id), "1");
     setOpen(false);
+    // Persist skip so it carries across devices for today
+    await (supabase as any)
+      .from("wellness_skips")
+      .upsert(
+        { athlete_id: profile.id, skip_date: new Date().toISOString().slice(0, 10) },
+        { onConflict: "athlete_id,skip_date" },
+      );
   };
 
   const submit = async () => {
