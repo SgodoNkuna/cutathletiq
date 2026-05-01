@@ -76,6 +76,18 @@ function CoachHome() {
           role: r.role,
         }));
       setMembers(cleaned);
+
+      // Squad stats — last 14 days completion + game minutes + injury flag
+      const to = new Date();
+      const from = new Date();
+      from.setDate(to.getDate() - 13);
+      const fromIso = from.toISOString().slice(0, 10);
+      const toIso = to.toISOString().slice(0, 10);
+      const { data: s, error: statsErr } = await supabase.rpc("team_completion_stats", {
+        _from: fromIso,
+        _to: toIso,
+      });
+      if (!statsErr && s) setStats(s as SquadStat[]);
     }
     setLoading(false);
   }, [profile]);
