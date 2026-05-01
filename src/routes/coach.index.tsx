@@ -28,11 +28,26 @@ type Member = {
   role: string | null;
 };
 
+type SquadStat = {
+  athlete_id: string;
+  first_name: string | null;
+  last_name: string | null;
+  sport: string | null;
+  athlete_position: string | null;
+  scheduled_sessions: number;
+  completed_sessions: number;
+  last_logged_at: string | null;
+  last_exercise_name: string | null;
+  total_game_minutes: number;
+  has_active_injury: boolean;
+};
+
 function CoachHome() {
   const { profile } = useAuth();
   const navigate = useNavigate();
   const [team, setTeam] = React.useState<Team | null>(null);
   const [members, setMembers] = React.useState<Member[]>([]);
+  const [stats, setStats] = React.useState<SquadStat[]>([]);
   const [loading, setLoading] = React.useState(true);
 
   const loadTeam = React.useCallback(async () => {
