@@ -772,6 +772,45 @@ export type Database = {
           },
         ]
       }
+      set_completions: {
+        Row: {
+          athlete_id: string
+          completed_at: string
+          elapsed_sec: number | null
+          exercise_id: string
+          id: string
+          reps: number
+          rpe: number | null
+          session_id: string
+          set_number: number
+          weight_kg: number | null
+        }
+        Insert: {
+          athlete_id: string
+          completed_at?: string
+          elapsed_sec?: number | null
+          exercise_id: string
+          id?: string
+          reps: number
+          rpe?: number | null
+          session_id: string
+          set_number: number
+          weight_kg?: number | null
+        }
+        Update: {
+          athlete_id?: string
+          completed_at?: string
+          elapsed_sec?: number | null
+          exercise_id?: string
+          id?: string
+          reps?: number
+          rpe?: number | null
+          session_id?: string
+          set_number?: number
+          weight_kg?: number | null
+        }
+        Relationships: []
+      }
       team_events: {
         Row: {
           created_at: string
@@ -889,6 +928,27 @@ export type Database = {
           readiness?: number
           sleep_hours?: number
           sleep_quality?: number
+        }
+        Relationships: []
+      }
+      wellness_skips: {
+        Row: {
+          athlete_id: string
+          created_at: string
+          id: string
+          skip_date: string
+        }
+        Insert: {
+          athlete_id: string
+          created_at?: string
+          id?: string
+          skip_date?: string
+        }
+        Update: {
+          athlete_id?: string
+          created_at?: string
+          id?: string
+          skip_date?: string
         }
         Relationships: []
       }
