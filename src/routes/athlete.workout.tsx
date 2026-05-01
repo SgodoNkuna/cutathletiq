@@ -208,6 +208,37 @@ function WorkoutPage() {
       return;
     }
 
+    // Section 7 — set_completions: per-set realtime pulse for coach dashboards
+    const setRows: Array<{
+      athlete_id: string;
+      session_id: string;
+      exercise_id: string;
+      set_number: number;
+      reps: number;
+      weight_kg: number | null;
+      elapsed_sec: number | null;
+      rpe: number;
+    }> = [];
+    state.forEach((sets, ei) => {
+      const ex = session.exercises[ei];
+      sets.forEach((s, si) => {
+        if (!s.done) return;
+        setRows.push({
+          athlete_id: profile.id,
+          session_id: session.id,
+          exercise_id: ex.id,
+          set_number: si + 1,
+          reps: s.reps,
+          weight_kg: s.weight > 0 ? s.weight : null,
+          elapsed_sec: s.elapsedSec ?? null,
+          rpe: parsed.data,
+        });
+      });
+    });
+    if (setRows.length > 0) {
+      await (supabase as any).from("set_completions").insert(setRows);
+    }
+
     // Persist PRs
     if (newPRs.length > 0) {
       const prRows = newPRs.map((p) => {
