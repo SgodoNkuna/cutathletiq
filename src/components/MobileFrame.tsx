@@ -99,8 +99,8 @@ export function MobileFrame({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-secondary via-background to-secondary/40 flex items-center justify-center py-4 px-2">
-      <div className="relative w-full max-w-[430px] min-h-[calc(100vh-2rem)] sm:min-h-[860px] bg-background rounded-[2.25rem] sm:border-[10px] border-navy-deep shadow-2xl overflow-hidden flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-secondary via-background to-secondary/40 flex items-center justify-center py-4 px-2 lg:py-8 lg:px-6">
+      <div className="relative w-full max-w-[430px] lg:max-w-[1100px] min-h-[calc(100vh-2rem)] sm:min-h-[860px] lg:min-h-[calc(100vh-4rem)] bg-background rounded-[2.25rem] lg:rounded-[1.5rem] sm:border-[10px] lg:border-[1px] border-navy-deep lg:border-border shadow-2xl overflow-hidden flex flex-col">
         {/* Status bar / role tag — iOS-style, frosted */}
         <div className="flex items-center justify-between px-4 py-2 bg-navy/95 backdrop-blur text-primary-foreground text-[11px] font-medium tracking-wide">
           <span className="opacity-80">CUT ATHLETIQ</span>
