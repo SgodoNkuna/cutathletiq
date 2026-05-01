@@ -29,6 +29,7 @@ import { Route as PhysioLogRouteImport } from './routes/physio.log'
 import { Route as DevDiagnosticsRouteImport } from './routes/dev.diagnostics'
 import { Route as CoachWellnessRouteImport } from './routes/coach.wellness'
 import { Route as CoachProgramRouteImport } from './routes/coach.program'
+import { Route as CoachGamesRouteImport } from './routes/coach.games'
 import { Route as AthleteWorkoutRouteImport } from './routes/athlete.workout'
 import { Route as AthleteWellnessRouteImport } from './routes/athlete.wellness'
 import { Route as AthleteProgressRouteImport } from './routes/athlete.progress'
@@ -139,6 +140,11 @@ const CoachProgramRoute = CoachProgramRouteImport.update({
   path: '/coach/program',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CoachGamesRoute = CoachGamesRouteImport.update({
+  id: '/coach/games',
+  path: '/coach/games',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AthleteWorkoutRoute = AthleteWorkoutRouteImport.update({
   id: '/athlete/workout',
   path: '/athlete/workout',
@@ -206,6 +212,7 @@ export interface FileRoutesByFullPath {
   '/athlete/progress': typeof AthleteProgressRoute
   '/athlete/wellness': typeof AthleteWellnessRoute
   '/athlete/workout': typeof AthleteWorkoutRoute
+  '/coach/games': typeof CoachGamesRoute
   '/coach/program': typeof CoachProgramRoute
   '/coach/wellness': typeof CoachWellnessRoute
   '/dev/diagnostics': typeof DevDiagnosticsRoute
@@ -237,6 +244,7 @@ export interface FileRoutesByTo {
   '/athlete/progress': typeof AthleteProgressRoute
   '/athlete/wellness': typeof AthleteWellnessRoute
   '/athlete/workout': typeof AthleteWorkoutRoute
+  '/coach/games': typeof CoachGamesRoute
   '/coach/program': typeof CoachProgramRoute
   '/coach/wellness': typeof CoachWellnessRoute
   '/dev/diagnostics': typeof DevDiagnosticsRoute
@@ -269,6 +277,7 @@ export interface FileRoutesById {
   '/athlete/progress': typeof AthleteProgressRoute
   '/athlete/wellness': typeof AthleteWellnessRoute
   '/athlete/workout': typeof AthleteWorkoutRoute
+  '/coach/games': typeof CoachGamesRoute
   '/coach/program': typeof CoachProgramRoute
   '/coach/wellness': typeof CoachWellnessRoute
   '/dev/diagnostics': typeof DevDiagnosticsRoute
@@ -302,6 +311,7 @@ export interface FileRouteTypes {
     | '/athlete/progress'
     | '/athlete/wellness'
     | '/athlete/workout'
+    | '/coach/games'
     | '/coach/program'
     | '/coach/wellness'
     | '/dev/diagnostics'
@@ -333,6 +343,7 @@ export interface FileRouteTypes {
     | '/athlete/progress'
     | '/athlete/wellness'
     | '/athlete/workout'
+    | '/coach/games'
     | '/coach/program'
     | '/coach/wellness'
     | '/dev/diagnostics'
@@ -364,6 +375,7 @@ export interface FileRouteTypes {
     | '/athlete/progress'
     | '/athlete/wellness'
     | '/athlete/workout'
+    | '/coach/games'
     | '/coach/program'
     | '/coach/wellness'
     | '/dev/diagnostics'
@@ -396,6 +408,7 @@ export interface RootRouteChildren {
   AthleteProgressRoute: typeof AthleteProgressRoute
   AthleteWellnessRoute: typeof AthleteWellnessRoute
   AthleteWorkoutRoute: typeof AthleteWorkoutRoute
+  CoachGamesRoute: typeof CoachGamesRoute
   CoachProgramRoute: typeof CoachProgramRoute
   CoachWellnessRoute: typeof CoachWellnessRoute
   DevDiagnosticsRoute: typeof DevDiagnosticsRoute
@@ -549,6 +562,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CoachProgramRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/coach/games': {
+      id: '/coach/games'
+      path: '/coach/games'
+      fullPath: '/coach/games'
+      preLoaderRoute: typeof CoachGamesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/athlete/workout': {
       id: '/athlete/workout'
       path: '/athlete/workout'
@@ -636,6 +656,7 @@ const rootRouteChildren: RootRouteChildren = {
   AthleteProgressRoute: AthleteProgressRoute,
   AthleteWellnessRoute: AthleteWellnessRoute,
   AthleteWorkoutRoute: AthleteWorkoutRoute,
+  CoachGamesRoute: CoachGamesRoute,
   CoachProgramRoute: CoachProgramRoute,
   CoachWellnessRoute: CoachWellnessRoute,
   DevDiagnosticsRoute: DevDiagnosticsRoute,

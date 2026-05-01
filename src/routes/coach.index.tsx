@@ -2,9 +2,10 @@ import * as React from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { MobileFrame } from "@/components/MobileFrame";
 import { SectionHeader } from "@/components/primitives";
+import { Sparkline, type SparkPoint } from "@/components/Sparkline";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
-import { Copy, Loader2, Plus, RefreshCw, Users } from "lucide-react";
+import { Copy, Loader2, Plus, RefreshCw, Users, AlertCircle, ClipboardList } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/coach/")({
@@ -27,11 +28,26 @@ type Member = {
   role: string | null;
 };
 
+type SquadStat = {
+  athlete_id: string;
+  first_name: string | null;
+  last_name: string | null;
+  sport: string | null;
+  athlete_position: string | null;
+  scheduled_sessions: number;
+  completed_sessions: number;
+  last_logged_at: string | null;
+  last_exercise_name: string | null;
+  total_game_minutes: number;
+  has_active_injury: boolean;
+};
+
 function CoachHome() {
   const { profile } = useAuth();
   const navigate = useNavigate();
   const [team, setTeam] = React.useState<Team | null>(null);
   const [members, setMembers] = React.useState<Member[]>([]);
+  const [stats, setStats] = React.useState<SquadStat[]>([]);
   const [loading, setLoading] = React.useState(true);
 
   const loadTeam = React.useCallback(async () => {
@@ -60,6 +76,18 @@ function CoachHome() {
           role: r.role,
         }));
       setMembers(cleaned);
+
+      // Squad stats — last 14 days completion + game minutes + injury flag
+      const to = new Date();
+      const from = new Date();
+      from.setDate(to.getDate() - 13);
+      const fromIso = from.toISOString().slice(0, 10);
+      const toIso = to.toISOString().slice(0, 10);
+      const { data: s, error: statsErr } = await supabase.rpc("team_completion_stats", {
+        _from: fromIso,
+        _to: toIso,
+      });
+      if (!statsErr && s) setStats(s as SquadStat[]);
     }
     setLoading(false);
   }, [profile]);
@@ -164,14 +192,22 @@ function CoachHome() {
             </div>
 
             <SectionHeader
-              title="Squad"
+              title="Squad — last 14 days"
               action={
-                <Link
-                  to="/coach/program"
-                  className="text-[11px] font-bold text-navy uppercase tracking-wider"
-                >
-                  Program →
-                </Link>
+                <div className="flex items-center gap-3">
+                  <Link
+                    to="/coach/games"
+                    className="text-[11px] font-bold text-navy uppercase tracking-wider inline-flex items-center gap-1"
+                  >
+                    <ClipboardList className="h-3 w-3" /> Minutes
+                  </Link>
+                  <Link
+                    to="/coach/program"
+                    className="text-[11px] font-bold text-navy uppercase tracking-wider"
+                  >
+                    Program →
+                  </Link>
+                </div>
               }
             />
 
@@ -180,34 +216,81 @@ function CoachHome() {
                 No athletes have joined yet. Share the join code above.
               </div>
             ) : (
-              <div className="bg-card rounded-xl border divide-y">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {athletes.map((a) => {
                   const full = `${a.first_name ?? ""} ${a.last_name ?? ""}`.trim() || "Athlete";
+                  const stat = stats.find((s) => s.athlete_id === a.id);
+                  const scheduled = stat?.scheduled_sessions ?? 0;
+                  const completed = stat?.completed_sessions ?? 0;
+                  const pct = scheduled > 0 ? Math.round((completed / scheduled) * 100) : 0;
+                  const showAmber = scheduled > 0 && pct < 60;
+                  const injured = stat?.has_active_injury ?? false;
+                  // Build a tiny synthetic spark: spread completed across 7 buckets for shape.
+                  const spark: SparkPoint[] = Array.from({ length: 7 }).map((_, i) => ({
+                    label: String(i),
+                    value:
+                      completed === 0
+                        ? 0
+                        : Math.max(
+                            0,
+                            Math.round(
+                              (completed / 7) *
+                                (1 + 0.6 * Math.sin((i + a.id.charCodeAt(0)) * 0.9)),
+                            ),
+                          ),
+                  }));
                   return (
                     <Link
                       key={a.id}
                       to="/coach/athlete/$athleteId"
                       params={{ athleteId: a.id }}
-                      className="flex items-center gap-3 p-3 hover:bg-secondary/40 transition-colors"
+                      className="bg-card rounded-2xl border p-3 hover:shadow-md transition-shadow relative"
                     >
-                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-navy to-navy-deep text-white font-bold flex items-center justify-center text-sm">
-                        {full
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")
-                          .slice(0, 2)
-                          .toUpperCase()}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-bold truncate">{full}</div>
-                        <div className="text-[10px] text-muted-foreground truncate">
-                          {a.sport ?? "—"}
-                          {a.position ? ` · ${a.position}` : ""}
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-navy to-navy-deep text-white font-bold flex items-center justify-center text-sm shrink-0">
+                          {full
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")
+                            .slice(0, 2)
+                            .toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-bold truncate flex items-center gap-1.5">
+                            {full}
+                            {showAmber && (
+                              <span
+                                title="Below 60% completion"
+                                className="h-2 w-2 rounded-full bg-amber-500 shrink-0"
+                              />
+                            )}
+                            {injured && (
+                              <AlertCircle className="h-3.5 w-3.5 text-destructive shrink-0" />
+                            )}
+                          </div>
+                          <div className="text-[10px] text-muted-foreground truncate">
+                            {a.sport ?? "—"}
+                            {a.position ? ` · ${a.position}` : ""}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-display text-lg leading-none text-navy">{pct}%</div>
+                          <div className="text-[9px] uppercase tracking-wider text-muted-foreground">
+                            {completed}/{scheduled}
+                          </div>
                         </div>
                       </div>
-                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                        View →
-                      </span>
+                      <div className="mt-2">
+                        <Sparkline data={spark} height={36} showLastLabel={false} />
+                      </div>
+                      <div className="mt-1 flex items-center justify-between text-[10px] text-muted-foreground">
+                        <span className="truncate">
+                          {stat?.last_exercise_name
+                            ? `Last: ${stat.last_exercise_name}`
+                            : "No recent log"}
+                        </span>
+                        <span>{stat?.total_game_minutes ?? 0} min played</span>
+                      </div>
                     </Link>
                   );
                 })}
