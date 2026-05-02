@@ -227,6 +227,11 @@ function CoachHome() {
               title="Squad — last 14 days"
               action={
                 <div className="flex items-center gap-3">
+                  {refreshing && (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-success animate-pulse">
+                      <Activity className="h-3 w-3" /> Live
+                    </span>
+                  )}
                   <Link
                     to="/coach/games"
                     className="text-[11px] font-bold text-navy uppercase tracking-wider inline-flex items-center gap-1"
