@@ -50,6 +50,8 @@ function CoachHome() {
   const [members, setMembers] = React.useState<Member[]>([]);
   const [stats, setStats] = React.useState<SquadStat[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [refreshing, setRefreshing] = React.useState(false);
+  const refreshTimer = React.useRef<number | null>(null);
 
   const loadTeam = React.useCallback(async () => {
     if (!profile) return;
@@ -106,12 +108,17 @@ function CoachHome() {
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "set_completions" },
         () => {
-          void loadTeam();
+          setRefreshing(true);
+          if (refreshTimer.current) window.clearTimeout(refreshTimer.current);
+          refreshTimer.current = window.setTimeout(() => {
+            void loadTeam().finally(() => setRefreshing(false));
+          }, 250);
         },
       )
       .subscribe();
     return () => {
       void supabase.removeChannel(channel);
+      if (refreshTimer.current) window.clearTimeout(refreshTimer.current);
     };
   }, [team, loadTeam]);
 
