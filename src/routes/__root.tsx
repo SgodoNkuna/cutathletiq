@@ -1,7 +1,10 @@
+import * as React from "react";
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { AuthProvider } from "@/lib/auth-context";
 import { Toaster } from "@/components/ui/sonner";
 import { DevErrorBoundary } from "@/components/DevErrorBoundary";
+import { checkStartupHealth } from "@/lib/server/startup.functions";
+import { toast } from "sonner";
 
 import appCss from "../styles.css?url";
 
@@ -85,6 +88,27 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
+  // One-shot startup health check. Surfaces a clear toast if a required
+  // server-side secret (e.g. ADMIN_INVITE_CODE) is missing so the operator
+  // notices immediately instead of hitting a confusing runtime error later.
+  React.useEffect(() => {
+    let cancelled = false;
+    void checkStartupHealth()
+      .then((res) => {
+        if (cancelled || res.ok) return;
+        const list = res.missing.join(", ");
+        console.error(`[startup] Missing required environment variables: ${list}`);
+        toast.error(`Missing server config: ${list}`, {
+          duration: 10_000,
+          description: "Some features will not work until these are set.",
+        });
+      })
+      .catch((e) => console.warn("[startup] health check failed", e));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <DevErrorBoundary>
       <AuthProvider>
