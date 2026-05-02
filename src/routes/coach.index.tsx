@@ -163,8 +163,14 @@ function CoachHome() {
     <MobileFrame title={greetingName}>
       <div className="px-5">
         {loading ? (
-          <div className="py-12 flex items-center justify-center">
-            <Loader2 className="h-5 w-5 animate-spin text-gold" />
+          <div className="space-y-4">
+            <Skeleton className="h-32 w-full rounded-2xl" />
+            <Skeleton className="h-6 w-40" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className="h-32 rounded-2xl" />
+              ))}
+            </div>
           </div>
         ) : !team ? (
           <div className="bg-gold/10 border border-gold/40 rounded-2xl p-5 text-center">
