@@ -51,7 +51,15 @@ export const signupUser = createServerFn({ method: "POST" })
       }
       if (data.role === "admin") {
         const expected = (process.env.ADMIN_INVITE_CODE ?? "").trim().toUpperCase();
-        if (!expected || supplied !== expected) {
+        if (!expected) {
+          console.error("[auth] ADMIN_INVITE_CODE secret is not configured on the server.");
+          return {
+            ok: false,
+            error:
+              "Admin signup is unavailable: the server is missing ADMIN_INVITE_CODE. Please contact your administrator.",
+          };
+        }
+        if (supplied !== expected) {
           return { ok: false, error: "Invalid admin invite code." };
         }
       } else {
