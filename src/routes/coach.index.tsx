@@ -5,8 +5,9 @@ import { SectionHeader } from "@/components/primitives";
 import { Sparkline, type SparkPoint } from "@/components/Sparkline";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
-import { Copy, Loader2, Plus, RefreshCw, Users, AlertCircle, ClipboardList } from "lucide-react";
+import { Copy, Plus, RefreshCw, Users, AlertCircle, ClipboardList, Activity } from "lucide-react";
 import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const Route = createFileRoute("/coach/")({
   head: () => ({
@@ -49,6 +50,8 @@ function CoachHome() {
   const [members, setMembers] = React.useState<Member[]>([]);
   const [stats, setStats] = React.useState<SquadStat[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [refreshing, setRefreshing] = React.useState(false);
+  const refreshTimer = React.useRef<number | null>(null);
 
   const loadTeam = React.useCallback(async () => {
     if (!profile) return;
@@ -105,12 +108,17 @@ function CoachHome() {
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "set_completions" },
         () => {
-          void loadTeam();
+          setRefreshing(true);
+          if (refreshTimer.current) window.clearTimeout(refreshTimer.current);
+          refreshTimer.current = window.setTimeout(() => {
+            void loadTeam().finally(() => setRefreshing(false));
+          }, 250);
         },
       )
       .subscribe();
     return () => {
       void supabase.removeChannel(channel);
+      if (refreshTimer.current) window.clearTimeout(refreshTimer.current);
     };
   }, [team, loadTeam]);
 
@@ -155,8 +163,14 @@ function CoachHome() {
     <MobileFrame title={greetingName}>
       <div className="px-5">
         {loading ? (
-          <div className="py-12 flex items-center justify-center">
-            <Loader2 className="h-5 w-5 animate-spin text-gold" />
+          <div className="space-y-4">
+            <Skeleton className="h-32 w-full rounded-2xl" />
+            <Skeleton className="h-6 w-40" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className="h-32 rounded-2xl" />
+              ))}
+            </div>
           </div>
         ) : !team ? (
           <div className="bg-gold/10 border border-gold/40 rounded-2xl p-5 text-center">
@@ -213,6 +227,11 @@ function CoachHome() {
               title="Squad — last 14 days"
               action={
                 <div className="flex items-center gap-3">
+                  {refreshing && (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-success animate-pulse">
+                      <Activity className="h-3 w-3" /> Live
+                    </span>
+                  )}
                   <Link
                     to="/coach/games"
                     className="text-[11px] font-bold text-navy uppercase tracking-wider inline-flex items-center gap-1"
@@ -234,7 +253,7 @@ function CoachHome() {
                 No athletes have joined yet. Share the join code above.
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
                 {athletes.map((a) => {
                   const full = `${a.first_name ?? ""} ${a.last_name ?? ""}`.trim() || "Athlete";
                   const stat = stats.find((s) => s.athlete_id === a.id);
