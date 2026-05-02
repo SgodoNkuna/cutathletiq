@@ -253,7 +253,7 @@ function CoachHome() {
                 No athletes have joined yet. Share the join code above.
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
                 {athletes.map((a) => {
                   const full = `${a.first_name ?? ""} ${a.last_name ?? ""}`.trim() || "Athlete";
                   const stat = stats.find((s) => s.athlete_id === a.id);
