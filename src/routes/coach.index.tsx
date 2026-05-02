@@ -5,8 +5,9 @@ import { SectionHeader } from "@/components/primitives";
 import { Sparkline, type SparkPoint } from "@/components/Sparkline";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
-import { Copy, Loader2, Plus, RefreshCw, Users, AlertCircle, ClipboardList } from "lucide-react";
+import { Copy, Plus, RefreshCw, Users, AlertCircle, ClipboardList, Activity } from "lucide-react";
 import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const Route = createFileRoute("/coach/")({
   head: () => ({
