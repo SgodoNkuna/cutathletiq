@@ -52,6 +52,22 @@ const NAV_BY_ROLE: Record<Role, NavItem[]> = {
   ],
 };
 
+/**
+ * Detect a desktop viewport. md breakpoint = 768px (matches Tailwind's md:).
+ * SSR-safe: starts as false, then upgrades after mount.
+ */
+function useIsDesktop() {
+  const [isDesktop, setIsDesktop] = React.useState(false);
+  React.useEffect(() => {
+    const mql = window.matchMedia("(min-width: 768px)");
+    const update = () => setIsDesktop(mql.matches);
+    update();
+    mql.addEventListener("change", update);
+    return () => mql.removeEventListener("change", update);
+  }, []);
+  return isDesktop;
+}
+
 export function MobileFrame({
   children,
   hideNav = false,
@@ -65,6 +81,7 @@ export function MobileFrame({
   const location = useLocation();
   const navigate = useNavigate();
   const scrollRef = React.useRef<HTMLDivElement>(null);
+  const isDesktop = useIsDesktop();
 
   // Auth gate — bounce to /login if no profile
   React.useEffect(() => {
@@ -98,14 +115,106 @@ export function MobileFrame({
     navigate({ to: "/login" });
   };
 
+  // ============================================================
+  // DESKTOP LAYOUT — true full-width app shell with sidebar nav
+  // ============================================================
+  if (isDesktop) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-secondary via-background to-secondary/40 flex">
+        {/* Sidebar */}
+        {!hideNav && (
+          <aside className="w-64 shrink-0 bg-navy text-white flex flex-col">
+            <div className="px-5 py-5 border-b border-white/10">
+              <div className="text-[11px] uppercase tracking-[0.2em] text-gold font-bold">
+                CUT Athletiq
+              </div>
+              <div className="mt-1 text-sm font-medium truncate">
+                {profile.first_name || profile.email.split("@")[0]}
+              </div>
+              <div className="text-[10px] uppercase tracking-wider text-white/60 mt-0.5">
+                {roleLabel}
+              </div>
+            </div>
+            <nav className="flex-1 px-3 py-4 space-y-1">
+              {items.map((item) => {
+                const active = location.pathname === item.to;
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors",
+                      active
+                        ? "bg-gold text-navy-deep"
+                        : "text-white/80 hover:bg-white/10 hover:text-white",
+                    )}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </nav>
+            <div className="px-3 py-3 border-t border-white/10 space-y-1">
+              <Link
+                to="/profile"
+                className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-white/80 hover:bg-white/10 hover:text-white"
+              >
+                <UserIcon className="h-4 w-4" /> Profile
+              </Link>
+              <button
+                onClick={handleSignOut}
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-white/80 hover:bg-white/10 hover:text-white"
+              >
+                <LogOut className="h-4 w-4" /> Sign out
+              </button>
+            </div>
+          </aside>
+        )}
+
+        {/* Main */}
+        <div className="flex-1 flex flex-col min-w-0">
+          <header className="h-14 border-b bg-card/95 backdrop-blur flex items-center justify-between px-6">
+            <div className="flex items-center gap-3 min-w-0">
+              {title && (
+                <h1 className="font-display text-xl text-foreground truncate">{title}</h1>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <NotificationBell />
+            </div>
+          </header>
+          <main
+            ref={scrollRef}
+            className="flex-1 overflow-y-auto overflow-x-hidden scroll-smooth"
+          >
+            <div className="max-w-6xl mx-auto px-6 py-6 animate-fade-up">{children}</div>
+            <div className="text-center text-[11px] text-muted-foreground py-4">
+              Phase 1 Test Build ·{" "}
+              <Link to="/privacy" className="underline hover:text-foreground">
+                Privacy
+              </Link>
+            </div>
+          </main>
+        </div>
+
+        <TestModeStamp />
+        <WellnessGate />
+      </div>
+    );
+  }
+
+  // ============================================================
+  // MOBILE LAYOUT — phone-shell card (unchanged)
+  // ============================================================
   return (
-    <div className="min-h-screen bg-gradient-to-br from-secondary via-background to-secondary/40 flex items-center justify-center py-4 px-2 md:py-8 md:px-6">
-      <div className="relative w-full max-w-[430px] md:max-w-[920px] lg:max-w-[1180px] xl:max-w-[1320px] min-h-[calc(100vh-2rem)] sm:min-h-[860px] md:min-h-[calc(100vh-4rem)] bg-background rounded-[2.25rem] md:rounded-[1.5rem] sm:border-[10px] md:border-[1px] border-navy-deep md:border-border shadow-2xl overflow-hidden flex flex-col">
-        {/* Status bar / role tag — iOS-style, frosted */}
+    <div className="min-h-screen bg-gradient-to-br from-secondary via-background to-secondary/40 flex items-center justify-center py-4 px-2">
+      <div className="relative w-full max-w-[430px] min-h-[calc(100vh-2rem)] sm:min-h-[860px] bg-background rounded-[2.25rem] border-[10px] border-navy-deep shadow-2xl overflow-hidden flex flex-col">
+        {/* Status bar / role tag */}
         <div className="flex items-center justify-between px-4 py-2 bg-navy/95 backdrop-blur text-primary-foreground text-[11px] font-medium tracking-wide">
           <span className="opacity-80">CUT ATHLETIQ</span>
           <div className="flex items-center gap-2">
-            <span className="opacity-70 hidden sm:inline">Hi,</span>
             <span className="font-bold truncate max-w-[100px]">
               {profile.first_name || profile.email.split("@")[0]}
             </span>
