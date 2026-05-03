@@ -101,7 +101,7 @@ function SystemStatusPage() {
             <KeyRound className="h-4 w-4" /> Invite codes
           </h2>
           <ul className="space-y-3">
-            {data.inviteCodes.map((c) => (
+            {data.inviteCodes.map((c: { role: string; configured: boolean; masked: string; source: string }) => (
               <li
                 key={c.role}
                 className="flex items-center justify-between border-b last:border-b-0 pb-3 last:pb-0"
