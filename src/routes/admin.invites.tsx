@@ -112,8 +112,17 @@ function AdminInvites() {
                     <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                       {role}
                     </div>
-                    <div className="font-mono font-bold text-2xl tracking-[0.3em] mt-1">
-                      {row?.code ?? "—"}
+                    <div className="font-mono font-bold text-2xl tracking-[0.3em] mt-1 flex items-center gap-2">
+                      {row?.code ? (reveal[role] ? row.code : mask(row.code)) : "—"}
+                      {row?.code && (
+                        <button
+                          aria-label={reveal[role] ? "Hide code" : "Reveal code"}
+                          onClick={() => setReveal((r) => ({ ...r, [role]: !r[role] }))}
+                          className="text-muted-foreground hover:text-foreground"
+                        >
+                          {reveal[role] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      )}
                     </div>
                     {row?.updated_at && (
                       <div className="text-[10px] text-muted-foreground mt-1">
