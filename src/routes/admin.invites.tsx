@@ -101,6 +101,26 @@ function AdminInvites() {
           </div>
         </div>
 
+        <SectionHeader title="Admin invite code" />
+        <div className="bg-card rounded-2xl border p-4 flex items-center justify-between">
+          <div>
+            <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              admin · env secret
+            </div>
+            <div className="font-mono font-bold text-2xl tracking-[0.3em] mt-1">
+              {adminInfo ? adminInfo.masked : "…"}
+            </div>
+            <div className="text-[10px] text-muted-foreground mt-1">
+              Stored as the <code>ADMIN_INVITE_CODE</code> server secret. Update it via Lovable Cloud → Secrets.
+            </div>
+          </div>
+          {adminInfo && !adminInfo.configured && (
+            <span className="inline-flex items-center gap-1 text-destructive text-[11px] font-bold uppercase">
+              <ShieldAlert className="h-3.5 w-3.5" /> Missing
+            </span>
+          )}
+        </div>
+
         <SectionHeader title="Active codes" />
         <div className="space-y-2">
           {(["coach", "physio"] as const).map((role) => {
