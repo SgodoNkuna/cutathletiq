@@ -34,6 +34,8 @@ function AdminInvites() {
   const navigate = useNavigate();
   const [rows, setRows] = React.useState<CodeRow[]>([]);
   const [busy, setBusy] = React.useState<string | null>(null);
+  const [adminInfo, setAdminInfo] = React.useState<AdminCodeInfo | null>(null);
+  const [reveal, setReveal] = React.useState<Record<string, boolean>>({});
 
   React.useEffect(() => {
     if (loading) return;
@@ -43,16 +45,26 @@ function AdminInvites() {
   }, [profile, loading, navigate]);
 
   const load = React.useCallback(async () => {
-    const { data } = await supabase
-      .from("invite_codes")
-      .select("role, code, updated_at")
-      .in("role", ["coach", "physio"]);
+    const [{ data }, health] = await Promise.all([
+      supabase.from("invite_codes").select("role, code, updated_at").in("role", ["coach", "physio"]),
+      checkStartupHealth().catch(() => null),
+    ]);
     setRows((data ?? []) as CodeRow[]);
+    if (health) {
+      const admin = health.inviteCodes.find((c) => c.role === "admin");
+      if (admin) setAdminInfo({ configured: admin.configured, masked: admin.masked });
+    }
   }, []);
 
   React.useEffect(() => {
     if (profile?.role === "admin") void load();
   }, [profile, load]);
+
+  const mask = (code: string) => {
+    const c = code.trim();
+    if (c.length <= 3) return "•".repeat(c.length);
+    return `${c.slice(0, 2)}${"•".repeat(Math.max(c.length - 4, 2))}${c.slice(-2)}`;
+  };
 
   const rotate = async (role: "coach" | "physio") => {
     setBusy(role);
