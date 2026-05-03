@@ -90,17 +90,23 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   // One-shot startup health check. Surfaces a clear toast if a required
   // server-side secret (e.g. ADMIN_INVITE_CODE) is missing so the operator
-  // notices immediately instead of hitting a confusing runtime error later.
+  // notices immediately. Detailed view lives at /system-status.
   React.useEffect(() => {
     let cancelled = false;
     void checkStartupHealth()
       .then((res) => {
         if (cancelled || res.ok) return;
-        const list = res.missing.join(", ");
-        console.error(`[startup] Missing required environment variables: ${list}`);
-        toast.error(`Missing server config: ${list}`, {
-          duration: 10_000,
-          description: "Some features will not work until these are set.",
+        const issues = [...res.missing, ...res.missingCodes.map((r) => `${r}_invite_code`)];
+        console.error(`[startup] Missing required configuration: ${issues.join(", ")}`);
+        toast.error(`Missing config: ${issues.join(", ")}`, {
+          duration: 12_000,
+          description: "Open /system-status for details.",
+          action: {
+            label: "Details",
+            onClick: () => {
+              window.location.href = "/system-status";
+            },
+          },
         });
       })
       .catch((e) => console.warn("[startup] health check failed", e));
