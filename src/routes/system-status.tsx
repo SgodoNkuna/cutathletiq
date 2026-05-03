@@ -76,7 +76,7 @@ function SystemStatusPage() {
             Environment secrets
           </h2>
           <ul className="space-y-2">
-            {data.checked.map((key) => {
+            {(data.checked as readonly string[]).map((key: string) => {
               const missing = (data.missing as string[]).includes(key);
               return (
                 <li key={key} className="flex items-center justify-between text-sm">
