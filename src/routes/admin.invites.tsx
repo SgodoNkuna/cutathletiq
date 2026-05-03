@@ -176,6 +176,11 @@ function AdminInvites() {
             );
           })}
         </div>
+
+        <div className="text-center text-[11px] text-muted-foreground mt-4">
+          <Link to="/system-status" className="underline">View system status</Link> ·{" "}
+          <Link to="/security" className="underline">Security notes</Link>
+        </div>
       </div>
     </MobileFrame>
   );
