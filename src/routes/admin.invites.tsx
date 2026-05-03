@@ -1,11 +1,12 @@
 import * as React from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { MobileFrame } from "@/components/MobileFrame";
 import { SectionHeader } from "@/components/primitives";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
+import { checkStartupHealth } from "@/lib/server/startup.functions";
 import { toast } from "sonner";
-import { KeyRound, RefreshCw, Copy, Loader2 } from "lucide-react";
+import { KeyRound, RefreshCw, Copy, Loader2, Eye, EyeOff, ShieldAlert } from "lucide-react";
 
 export const Route = createFileRoute("/admin/invites")({
   head: () => ({
@@ -16,6 +17,8 @@ export const Route = createFileRoute("/admin/invites")({
   }),
   component: AdminInvites,
 });
+
+type AdminCodeInfo = { configured: boolean; masked: string };
 
 type CodeRow = { role: "coach" | "physio"; code: string; updated_at: string };
 
