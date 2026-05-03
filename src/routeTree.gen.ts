@@ -9,7 +9,9 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SystemStatusRouteImport } from './routes/system-status'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as SecurityRouteImport } from './routes/security'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PrivacyRouteImport } from './routes/privacy'
@@ -40,9 +42,19 @@ import { Route as AdminInvitesRouteImport } from './routes/admin.invites'
 import { Route as AdminInjuriesRouteImport } from './routes/admin.injuries'
 import { Route as CoachAthleteAthleteIdRouteImport } from './routes/coach.athlete.$athleteId'
 
+const SystemStatusRoute = SystemStatusRouteImport.update({
+  id: '/system-status',
+  path: '/system-status',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SecurityRoute = SecurityRouteImport.update({
+  id: '/security',
+  path: '/security',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -203,7 +215,9 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/security': typeof SecurityRoute
   '/signup': typeof SignupRoute
+  '/system-status': typeof SystemStatusRoute
   '/admin/injuries': typeof AdminInjuriesRoute
   '/admin/invites': typeof AdminInvitesRoute
   '/admin/sessions': typeof AdminSessionsRoute
@@ -235,7 +249,9 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/security': typeof SecurityRoute
   '/signup': typeof SignupRoute
+  '/system-status': typeof SystemStatusRoute
   '/admin/injuries': typeof AdminInjuriesRoute
   '/admin/invites': typeof AdminInvitesRoute
   '/admin/sessions': typeof AdminSessionsRoute
@@ -268,7 +284,9 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/security': typeof SecurityRoute
   '/signup': typeof SignupRoute
+  '/system-status': typeof SystemStatusRoute
   '/admin/injuries': typeof AdminInjuriesRoute
   '/admin/invites': typeof AdminInvitesRoute
   '/admin/sessions': typeof AdminSessionsRoute
@@ -302,7 +320,9 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/profile'
     | '/reset-password'
+    | '/security'
     | '/signup'
+    | '/system-status'
     | '/admin/injuries'
     | '/admin/invites'
     | '/admin/sessions'
@@ -334,7 +354,9 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/profile'
     | '/reset-password'
+    | '/security'
     | '/signup'
+    | '/system-status'
     | '/admin/injuries'
     | '/admin/invites'
     | '/admin/sessions'
@@ -366,7 +388,9 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/profile'
     | '/reset-password'
+    | '/security'
     | '/signup'
+    | '/system-status'
     | '/admin/injuries'
     | '/admin/invites'
     | '/admin/sessions'
@@ -399,7 +423,9 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   ProfileRoute: typeof ProfileRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  SecurityRoute: typeof SecurityRoute
   SignupRoute: typeof SignupRoute
+  SystemStatusRoute: typeof SystemStatusRoute
   AdminInjuriesRoute: typeof AdminInjuriesRoute
   AdminInvitesRoute: typeof AdminInvitesRoute
   AdminSessionsRoute: typeof AdminSessionsRoute
@@ -422,11 +448,25 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/system-status': {
+      id: '/system-status'
+      path: '/system-status'
+      fullPath: '/system-status'
+      preLoaderRoute: typeof SystemStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/signup': {
       id: '/signup'
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/security': {
+      id: '/security'
+      path: '/security'
+      fullPath: '/security'
+      preLoaderRoute: typeof SecurityRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -647,7 +687,9 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   ProfileRoute: ProfileRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  SecurityRoute: SecurityRoute,
   SignupRoute: SignupRoute,
+  SystemStatusRoute: SystemStatusRoute,
   AdminInjuriesRoute: AdminInjuriesRoute,
   AdminInvitesRoute: AdminInvitesRoute,
   AdminSessionsRoute: AdminSessionsRoute,
@@ -670,12 +712,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}

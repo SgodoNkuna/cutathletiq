@@ -1,11 +1,12 @@
 import * as React from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { MobileFrame } from "@/components/MobileFrame";
 import { SectionHeader } from "@/components/primitives";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
+import { checkStartupHealth } from "@/lib/server/startup.functions";
 import { toast } from "sonner";
-import { KeyRound, RefreshCw, Copy, Loader2 } from "lucide-react";
+import { KeyRound, RefreshCw, Copy, Loader2, Eye, EyeOff, ShieldAlert } from "lucide-react";
 
 export const Route = createFileRoute("/admin/invites")({
   head: () => ({
@@ -16,6 +17,8 @@ export const Route = createFileRoute("/admin/invites")({
   }),
   component: AdminInvites,
 });
+
+type AdminCodeInfo = { configured: boolean; masked: string };
 
 type CodeRow = { role: "coach" | "physio"; code: string; updated_at: string };
 
@@ -31,6 +34,8 @@ function AdminInvites() {
   const navigate = useNavigate();
   const [rows, setRows] = React.useState<CodeRow[]>([]);
   const [busy, setBusy] = React.useState<string | null>(null);
+  const [adminInfo, setAdminInfo] = React.useState<AdminCodeInfo | null>(null);
+  const [reveal, setReveal] = React.useState<Record<string, boolean>>({});
 
   React.useEffect(() => {
     if (loading) return;
@@ -40,16 +45,26 @@ function AdminInvites() {
   }, [profile, loading, navigate]);
 
   const load = React.useCallback(async () => {
-    const { data } = await supabase
-      .from("invite_codes")
-      .select("role, code, updated_at")
-      .in("role", ["coach", "physio"]);
+    const [{ data }, health] = await Promise.all([
+      supabase.from("invite_codes").select("role, code, updated_at").in("role", ["coach", "physio"]),
+      checkStartupHealth().catch(() => null),
+    ]);
     setRows((data ?? []) as CodeRow[]);
+    if (health) {
+      const admin = health.inviteCodes.find((c) => c.role === "admin");
+      if (admin) setAdminInfo({ configured: admin.configured, masked: admin.masked });
+    }
   }, []);
 
   React.useEffect(() => {
     if (profile?.role === "admin") void load();
   }, [profile, load]);
+
+  const mask = (code: string) => {
+    const c = code.trim();
+    if (c.length <= 3) return "•".repeat(c.length);
+    return `${c.slice(0, 2)}${"•".repeat(Math.max(c.length - 4, 2))}${c.slice(-2)}`;
+  };
 
   const rotate = async (role: "coach" | "physio") => {
     setBusy(role);
@@ -86,6 +101,26 @@ function AdminInvites() {
           </div>
         </div>
 
+        <SectionHeader title="Admin invite code" />
+        <div className="bg-card rounded-2xl border p-4 flex items-center justify-between">
+          <div>
+            <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              admin · env secret
+            </div>
+            <div className="font-mono font-bold text-2xl tracking-[0.3em] mt-1">
+              {adminInfo ? adminInfo.masked : "…"}
+            </div>
+            <div className="text-[10px] text-muted-foreground mt-1">
+              Stored as the <code>ADMIN_INVITE_CODE</code> server secret. Update it via Lovable Cloud → Secrets.
+            </div>
+          </div>
+          {adminInfo && !adminInfo.configured && (
+            <span className="inline-flex items-center gap-1 text-destructive text-[11px] font-bold uppercase">
+              <ShieldAlert className="h-3.5 w-3.5" /> Missing
+            </span>
+          )}
+        </div>
+
         <SectionHeader title="Active codes" />
         <div className="space-y-2">
           {(["coach", "physio"] as const).map((role) => {
@@ -97,8 +132,17 @@ function AdminInvites() {
                     <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                       {role}
                     </div>
-                    <div className="font-mono font-bold text-2xl tracking-[0.3em] mt-1">
-                      {row?.code ?? "—"}
+                    <div className="font-mono font-bold text-2xl tracking-[0.3em] mt-1 flex items-center gap-2">
+                      {row?.code ? (reveal[role] ? row.code : mask(row.code)) : "—"}
+                      {row?.code && (
+                        <button
+                          aria-label={reveal[role] ? "Hide code" : "Reveal code"}
+                          onClick={() => setReveal((r) => ({ ...r, [role]: !r[role] }))}
+                          className="text-muted-foreground hover:text-foreground"
+                        >
+                          {reveal[role] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      )}
                     </div>
                     {row?.updated_at && (
                       <div className="text-[10px] text-muted-foreground mt-1">
@@ -131,6 +175,11 @@ function AdminInvites() {
               </div>
             );
           })}
+        </div>
+
+        <div className="text-center text-[11px] text-muted-foreground mt-4">
+          <Link to="/system-status" className="underline">View system status</Link> ·{" "}
+          <Link to="/security" className="underline">Security notes</Link>
         </div>
       </div>
     </MobileFrame>
