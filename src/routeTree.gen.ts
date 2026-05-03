@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SystemStatusRouteImport } from './routes/system-status'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ProfileRouteImport } from './routes/profile'
@@ -40,6 +41,11 @@ import { Route as AdminInvitesRouteImport } from './routes/admin.invites'
 import { Route as AdminInjuriesRouteImport } from './routes/admin.injuries'
 import { Route as CoachAthleteAthleteIdRouteImport } from './routes/coach.athlete.$athleteId'
 
+const SystemStatusRoute = SystemStatusRouteImport.update({
+  id: '/system-status',
+  path: '/system-status',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
@@ -204,6 +210,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
+  '/system-status': typeof SystemStatusRoute
   '/admin/injuries': typeof AdminInjuriesRoute
   '/admin/invites': typeof AdminInvitesRoute
   '/admin/sessions': typeof AdminSessionsRoute
@@ -236,6 +243,7 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
+  '/system-status': typeof SystemStatusRoute
   '/admin/injuries': typeof AdminInjuriesRoute
   '/admin/invites': typeof AdminInvitesRoute
   '/admin/sessions': typeof AdminSessionsRoute
@@ -269,6 +277,7 @@ export interface FileRoutesById {
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
+  '/system-status': typeof SystemStatusRoute
   '/admin/injuries': typeof AdminInjuriesRoute
   '/admin/invites': typeof AdminInvitesRoute
   '/admin/sessions': typeof AdminSessionsRoute
@@ -303,6 +312,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/reset-password'
     | '/signup'
+    | '/system-status'
     | '/admin/injuries'
     | '/admin/invites'
     | '/admin/sessions'
@@ -335,6 +345,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/reset-password'
     | '/signup'
+    | '/system-status'
     | '/admin/injuries'
     | '/admin/invites'
     | '/admin/sessions'
@@ -367,6 +378,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/reset-password'
     | '/signup'
+    | '/system-status'
     | '/admin/injuries'
     | '/admin/invites'
     | '/admin/sessions'
@@ -400,6 +412,7 @@ export interface RootRouteChildren {
   ProfileRoute: typeof ProfileRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SignupRoute: typeof SignupRoute
+  SystemStatusRoute: typeof SystemStatusRoute
   AdminInjuriesRoute: typeof AdminInjuriesRoute
   AdminInvitesRoute: typeof AdminInvitesRoute
   AdminSessionsRoute: typeof AdminSessionsRoute
@@ -422,6 +435,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/system-status': {
+      id: '/system-status'
+      path: '/system-status'
+      fullPath: '/system-status'
+      preLoaderRoute: typeof SystemStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/signup': {
       id: '/signup'
       path: '/signup'
@@ -648,6 +668,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileRoute: ProfileRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SignupRoute: SignupRoute,
+  SystemStatusRoute: SystemStatusRoute,
   AdminInjuriesRoute: AdminInjuriesRoute,
   AdminInvitesRoute: AdminInvitesRoute,
   AdminSessionsRoute: AdminSessionsRoute,

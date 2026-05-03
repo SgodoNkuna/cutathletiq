@@ -77,7 +77,7 @@ function SystemStatusPage() {
           </h2>
           <ul className="space-y-2">
             {data.checked.map((key) => {
-              const missing = data.missing.includes(key);
+              const missing = (data.missing as string[]).includes(key);
               return (
                 <li key={key} className="flex items-center justify-between text-sm">
                   <code className="font-mono">{key}</code>
