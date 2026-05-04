@@ -18,6 +18,7 @@ import {
 import { NotificationBell } from "./NotificationBell";
 import { TestModeStamp } from "./TestModeStamp";
 import { WellnessGate } from "./WellnessGate";
+import { HelpDrawer } from "./HelpDrawer";
 import { cn } from "@/lib/utils";
 
 type NavItem = { to: string; label: string; icon: React.ComponentType<{ className?: string }> };
@@ -182,6 +183,7 @@ export function MobileFrame({
               )}
             </div>
             <div className="flex items-center gap-2">
+              <HelpDrawer role={role} />
               <NotificationBell />
             </div>
           </header>
@@ -221,7 +223,7 @@ export function MobileFrame({
             <span className="opacity-50">·</span>
             <span className="font-bold uppercase opacity-80">{roleLabel}</span>
             <NotificationBell />
-            <Link
+            <HelpDrawer role={role} />
               to="/profile"
               aria-label="Profile"
               className="h-8 w-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center"
