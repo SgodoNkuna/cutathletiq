@@ -224,6 +224,7 @@ export function MobileFrame({
             <span className="font-bold uppercase opacity-80">{roleLabel}</span>
             <NotificationBell />
             <HelpDrawer role={role} />
+            <Link
               to="/profile"
               aria-label="Profile"
               className="h-8 w-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center"
