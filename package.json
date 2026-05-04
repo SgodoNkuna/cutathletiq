@@ -10,7 +10,11 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "test:rls": "node scripts/test-rls.js"
+    "test:rls": "node scripts/test-rls.js",
+    "test:smoke": "node scripts/smoke-test.mjs",
+    "test:responsive": "node scripts/responsive-test.mjs",
+    "test:missing-config": "node scripts/missing-config-test.mjs",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@cloudflare/vite-plugin": "^1.25.5",
