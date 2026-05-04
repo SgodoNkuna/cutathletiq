@@ -49,29 +49,26 @@ export const signupUser = createServerFn({ method: "POST" })
       if (!supplied) {
         return { ok: false, error: `An invite code is required to sign up as ${data.role}.` };
       }
-      if (data.role === "admin") {
-        const expected = (process.env.ADMIN_INVITE_CODE ?? "").trim().toUpperCase();
-        if (!expected) {
-          console.error("[auth] ADMIN_INVITE_CODE secret is not configured on the server.");
-          return {
-            ok: false,
-            error:
-              "Admin signup is unavailable: the server is missing ADMIN_INVITE_CODE. Please contact your administrator.",
-          };
-        }
-        if (supplied !== expected) {
-          return { ok: false, error: "Invalid admin invite code." };
-        }
-      } else {
-        // coach / physio — validate against invite_codes table
-        const { data: row, error: rpcErr } = await supabaseAdmin
-          .from("invite_codes")
-          .select("code")
-          .eq("role", data.role)
-          .maybeSingle();
-        if (rpcErr || !row || row.code.toUpperCase() !== supplied) {
-          return { ok: false, error: `Invalid ${data.role} invite code.` };
-        }
+      // Validate against invite_codes table for all 3 roles. For admin, the
+      // ADMIN_INVITE_CODE env secret is also accepted as a fallback so existing
+      // bootstrapping flows keep working.
+      const { data: row } = await supabaseAdmin
+        .from("invite_codes")
+        .select("code")
+        .eq("role", data.role)
+        .maybeSingle();
+      const dbCode = row?.code?.toUpperCase() ?? "";
+      const envFallback =
+        data.role === "admin" ? (process.env.ADMIN_INVITE_CODE ?? "").trim().toUpperCase() : "";
+      if (!dbCode && !envFallback) {
+        console.error(`[auth] No invite code configured for role=${data.role}`);
+        return {
+          ok: false,
+          error: `${data.role} signup is unavailable: no invite code is configured.`,
+        };
+      }
+      if (supplied !== dbCode && supplied !== envFallback) {
+        return { ok: false, error: `Invalid ${data.role} invite code.` };
       }
     }
 

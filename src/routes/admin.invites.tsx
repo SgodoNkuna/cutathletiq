@@ -20,7 +20,8 @@ export const Route = createFileRoute("/admin/invites")({
 
 type AdminCodeInfo = { configured: boolean; masked: string };
 
-type CodeRow = { role: "coach" | "physio"; code: string; updated_at: string };
+type Role = "coach" | "physio" | "admin";
+type CodeRow = { role: Role; code: string; updated_at: string };
 
 function newCode() {
   const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -46,7 +47,10 @@ function AdminInvites() {
 
   const load = React.useCallback(async () => {
     const [{ data }, health] = await Promise.all([
-      supabase.from("invite_codes").select("role, code, updated_at").in("role", ["coach", "physio"]),
+      supabase
+        .from("invite_codes")
+        .select("role, code, updated_at")
+        .in("role", ["coach", "physio", "admin"]),
       checkStartupHealth().catch(() => null),
     ]);
     setRows((data ?? []) as CodeRow[]);
@@ -66,7 +70,7 @@ function AdminInvites() {
     return `${c.slice(0, 2)}${"•".repeat(Math.max(c.length - 4, 2))}${c.slice(-2)}`;
   };
 
-  const rotate = async (role: "coach" | "physio") => {
+  const rotate = async (role: Role) => {
     setBusy(role);
     const code = newCode();
     const { error } = await supabase
@@ -101,29 +105,19 @@ function AdminInvites() {
           </div>
         </div>
 
-        <SectionHeader title="Admin invite code" />
-        <div className="bg-card rounded-2xl border p-4 flex items-center justify-between">
-          <div>
-            <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-              admin · env secret
-            </div>
-            <div className="font-mono font-bold text-2xl tracking-[0.3em] mt-1">
-              {adminInfo ? adminInfo.masked : "…"}
-            </div>
-            <div className="text-[10px] text-muted-foreground mt-1">
-              Stored as the <code>ADMIN_INVITE_CODE</code> server secret. Update it via Lovable Cloud → Secrets.
-            </div>
-          </div>
-          {adminInfo && !adminInfo.configured && (
-            <span className="inline-flex items-center gap-1 text-destructive text-[11px] font-bold uppercase">
-              <ShieldAlert className="h-3.5 w-3.5" /> Missing
+        {adminInfo && !adminInfo.configured && (
+          <div className="mt-3 rounded-xl border border-destructive/40 bg-destructive/5 p-3 text-[11px] flex items-center gap-2">
+            <ShieldAlert className="h-3.5 w-3.5 text-destructive shrink-0" />
+            <span>
+              <code>ADMIN_INVITE_CODE</code> env secret is not set. Admin signup will rely on the
+              database code below.
             </span>
-          )}
-        </div>
+          </div>
+        )}
 
         <SectionHeader title="Active codes" />
         <div className="space-y-2">
-          {(["coach", "physio"] as const).map((role) => {
+          {(["admin", "coach", "physio"] as const).map((role) => {
             const row = rows.find((r) => r.role === role);
             return (
               <div key={role} className="bg-card rounded-2xl border p-4">

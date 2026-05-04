@@ -19,6 +19,7 @@ import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as JoinTeamRouteImport } from './routes/join-team'
+import { Route as HelpRouteImport } from './routes/help'
 import { Route as FeedRouteImport } from './routes/feed'
 import { Route as CreateTeamRouteImport } from './routes/create-team'
 import { Route as CalendarRouteImport } from './routes/calendar'
@@ -90,6 +91,11 @@ const LeaderboardRoute = LeaderboardRouteImport.update({
 const JoinTeamRoute = JoinTeamRouteImport.update({
   id: '/join-team',
   path: '/join-team',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HelpRoute = HelpRouteImport.update({
+  id: '/help',
+  path: '/help',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FeedRoute = FeedRouteImport.update({
@@ -208,6 +214,7 @@ export interface FileRoutesByFullPath {
   '/calendar': typeof CalendarRoute
   '/create-team': typeof CreateTeamRoute
   '/feed': typeof FeedRoute
+  '/help': typeof HelpRoute
   '/join-team': typeof JoinTeamRoute
   '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
@@ -242,6 +249,7 @@ export interface FileRoutesByTo {
   '/calendar': typeof CalendarRoute
   '/create-team': typeof CreateTeamRoute
   '/feed': typeof FeedRoute
+  '/help': typeof HelpRoute
   '/join-team': typeof JoinTeamRoute
   '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
@@ -277,6 +285,7 @@ export interface FileRoutesById {
   '/calendar': typeof CalendarRoute
   '/create-team': typeof CreateTeamRoute
   '/feed': typeof FeedRoute
+  '/help': typeof HelpRoute
   '/join-team': typeof JoinTeamRoute
   '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
@@ -313,6 +322,7 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/create-team'
     | '/feed'
+    | '/help'
     | '/join-team'
     | '/leaderboard'
     | '/login'
@@ -347,6 +357,7 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/create-team'
     | '/feed'
+    | '/help'
     | '/join-team'
     | '/leaderboard'
     | '/login'
@@ -381,6 +392,7 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/create-team'
     | '/feed'
+    | '/help'
     | '/join-team'
     | '/leaderboard'
     | '/login'
@@ -416,6 +428,7 @@ export interface RootRouteChildren {
   CalendarRoute: typeof CalendarRoute
   CreateTeamRoute: typeof CreateTeamRoute
   FeedRoute: typeof FeedRoute
+  HelpRoute: typeof HelpRoute
   JoinTeamRoute: typeof JoinTeamRoute
   LeaderboardRoute: typeof LeaderboardRoute
   LoginRoute: typeof LoginRoute
@@ -516,6 +529,13 @@ declare module '@tanstack/react-router' {
       path: '/join-team'
       fullPath: '/join-team'
       preLoaderRoute: typeof JoinTeamRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/help': {
+      id: '/help'
+      path: '/help'
+      fullPath: '/help'
+      preLoaderRoute: typeof HelpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/feed': {
@@ -680,6 +700,7 @@ const rootRouteChildren: RootRouteChildren = {
   CalendarRoute: CalendarRoute,
   CreateTeamRoute: CreateTeamRoute,
   FeedRoute: FeedRoute,
+  HelpRoute: HelpRoute,
   JoinTeamRoute: JoinTeamRoute,
   LeaderboardRoute: LeaderboardRoute,
   LoginRoute: LoginRoute,
@@ -712,12 +733,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}
