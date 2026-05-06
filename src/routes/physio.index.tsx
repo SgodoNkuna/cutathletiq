@@ -169,7 +169,11 @@ function PhysioHome() {
                       {check.sport && <SportTag sport={check.sport} />}
                     </div>
                     <div className="text-[11px] text-muted-foreground mt-0.5">
-                      Pain {check.pain_level}/10 · {check.body_regions.join(", ") || "Body check"}
+                      Pain {check.pain_level}/10
+                      {typeof check.function_score === "number"
+                        ? ` · Function ${check.function_score}/10`
+                        : ""}{" "}
+                      · {check.body_regions.join(", ") || "Body check"}
                     </div>
                     {check.notes && (
                       <p className="text-xs text-foreground/80 mt-2">{check.notes}</p>
