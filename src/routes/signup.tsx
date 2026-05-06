@@ -45,6 +45,26 @@ function SignupPage() {
       toast.error("Password must be at least 8 characters.");
       return;
     }
+    if (role === "coach" || role === "physio" || role === "admin") {
+      const raw = adminCode;
+      const trimmed = raw.trim();
+      if (!trimmed) {
+        toast.error(`Enter the ${role} invite code.`);
+        return;
+      }
+      if (raw !== trimmed) {
+        toast.error("Invite code has extra spaces — remove them and try again.");
+        return;
+      }
+      if (trimmed !== trimmed.toUpperCase()) {
+        toast.error("Invite codes are uppercase only.");
+        return;
+      }
+      if (!/^[A-Z0-9]{4,16}$/.test(trimmed)) {
+        toast.error("That doesn't look like a valid invite code.");
+        return;
+      }
+    }
     setSubmitting(true);
     try {
       const res = await signupUser({
@@ -56,7 +76,8 @@ function SignupPage() {
           role,
           sport: sport || undefined,
           position: position || undefined,
-          admin_invite_code: role === "admin" ? adminCode : undefined,
+          admin_invite_code:
+            role === "coach" || role === "physio" || role === "admin" ? adminCode : undefined,
           consent_coach_training: consentCoach,
           consent_physio_health: consentPhysio,
         },
