@@ -5,7 +5,7 @@ import { SectionHeader } from "@/components/primitives";
 import { Sparkline, type SparkPoint } from "@/components/Sparkline";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
-import { Copy, Plus, RefreshCw, Users, AlertCircle, ClipboardList, Activity } from "lucide-react";
+import { Copy, Plus, RefreshCw, Users, AlertCircle, ClipboardList, Activity, Bell } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 
