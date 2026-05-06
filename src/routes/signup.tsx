@@ -198,11 +198,18 @@ function SignupPage() {
                 <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                   Sport
                 </label>
-                <Input
+                <select
                   value={sport}
                   onChange={(e) => setSport(e.target.value)}
-                  placeholder="Rugby"
-                />
+                  className="w-full h-9 rounded-md border bg-card px-3 text-sm"
+                >
+                  <option value="">Select sport…</option>
+                  {SPORTS.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
