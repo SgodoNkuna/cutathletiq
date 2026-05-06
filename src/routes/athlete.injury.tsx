@@ -28,6 +28,7 @@ function InjuryPage() {
   const [activeRegion, setActiveRegion] = React.useState<BodyRegion | null>(null);
   const [pain, setPain] = React.useState(4);
   const [notes, setNotes] = React.useState("");
+  const [functionScore, setFunctionScore] = React.useState(8);
   const [submitted, setSubmitted] = React.useState<string | null>(null);
   const [submitting, setSubmitting] = React.useState(false);
 
