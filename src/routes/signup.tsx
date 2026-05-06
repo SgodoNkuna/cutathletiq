@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { signupUser } from "@/lib/server/auth.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { TestModeStamp } from "@/components/TestModeStamp";
-import { ROLES } from "@/data/mock";
+import { ROLES, SPORTS } from "@/data/mock";
 import { ROLE_HOME, type Role } from "@/lib/auth-context";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
