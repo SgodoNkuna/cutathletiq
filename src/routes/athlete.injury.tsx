@@ -28,6 +28,7 @@ function InjuryPage() {
   const [activeRegion, setActiveRegion] = React.useState<BodyRegion | null>(null);
   const [pain, setPain] = React.useState(4);
   const [notes, setNotes] = React.useState("");
+  const [functionScore, setFunctionScore] = React.useState(8);
   const [submitted, setSubmitted] = React.useState<string | null>(null);
   const [submitting, setSubmitting] = React.useState(false);
 
@@ -65,6 +66,7 @@ function InjuryPage() {
       athlete_id: profile.id,
       body_regions: Object.keys(pains),
       pain_level: maxPain,
+      function_score: functionScore,
       notes: notes.trim() || null,
     });
     setSubmitting(false);
@@ -101,6 +103,30 @@ function InjuryPage() {
               ))}
             </div>
           )}
+        </div>
+
+        <SectionHeader title="Daily function score" />
+        <div className="bg-card rounded-2xl border p-4">
+          <p className="text-[11px] text-muted-foreground">
+            How well can your body perform today? <strong>10</strong> = fully ready · <strong>0</strong>{" "}
+            = can't train.
+          </p>
+          <div className="mt-3 flex items-end justify-between">
+            <span className="text-[11px] text-muted-foreground">Can't train</span>
+            <span className="font-display text-5xl text-navy leading-none">
+              {functionScore}
+              <span className="text-base text-muted-foreground">/10</span>
+            </span>
+            <span className="text-[11px] text-muted-foreground">Fully ready</span>
+          </div>
+          <Slider
+            className="mt-3"
+            value={[functionScore]}
+            onValueChange={(v) => setFunctionScore(v[0])}
+            min={0}
+            max={10}
+            step={1}
+          />
         </div>
 
         <SectionHeader title="Notes (optional)" />

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { signupUser } from "@/lib/server/auth.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { TestModeStamp } from "@/components/TestModeStamp";
-import { ROLES } from "@/data/mock";
+import { ROLES, SPORTS } from "@/data/mock";
 import { ROLE_HOME, type Role } from "@/lib/auth-context";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -45,6 +45,26 @@ function SignupPage() {
       toast.error("Password must be at least 8 characters.");
       return;
     }
+    if (role === "coach" || role === "physio" || role === "admin") {
+      const raw = adminCode;
+      const trimmed = raw.trim();
+      if (!trimmed) {
+        toast.error(`Enter the ${role} invite code.`);
+        return;
+      }
+      if (raw !== trimmed) {
+        toast.error("Invite code has extra spaces — remove them and try again.");
+        return;
+      }
+      if (trimmed !== trimmed.toUpperCase()) {
+        toast.error("Invite codes are uppercase only.");
+        return;
+      }
+      if (!/^[A-Z0-9]{4,16}$/.test(trimmed)) {
+        toast.error("That doesn't look like a valid invite code.");
+        return;
+      }
+    }
     setSubmitting(true);
     try {
       const res = await signupUser({
@@ -56,7 +76,8 @@ function SignupPage() {
           role,
           sport: sport || undefined,
           position: position || undefined,
-          admin_invite_code: role === "admin" ? adminCode : undefined,
+          admin_invite_code:
+            role === "coach" || role === "physio" || role === "admin" ? adminCode : undefined,
           consent_coach_training: consentCoach,
           consent_physio_health: consentPhysio,
         },
@@ -177,11 +198,18 @@ function SignupPage() {
                 <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                   Sport
                 </label>
-                <Input
+                <select
                   value={sport}
                   onChange={(e) => setSport(e.target.value)}
-                  placeholder="Rugby"
-                />
+                  className="w-full h-9 rounded-md border bg-card px-3 text-sm"
+                >
+                  <option value="">Select sport…</option>
+                  {SPORTS.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
@@ -202,7 +230,18 @@ function SignupPage() {
                 <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                   Sport
                 </label>
-                <Input value={sport} onChange={(e) => setSport(e.target.value)} placeholder="Rugby" />
+                <select
+                  value={sport}
+                  onChange={(e) => setSport(e.target.value)}
+                  className="w-full h-9 rounded-md border bg-card px-3 text-sm"
+                >
+                  <option value="">Select sport…</option>
+                  {SPORTS.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
           )}

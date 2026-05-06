@@ -5,7 +5,7 @@ import { SectionHeader } from "@/components/primitives";
 import { Sparkline, type SparkPoint } from "@/components/Sparkline";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
-import { Copy, Plus, RefreshCw, Users, AlertCircle, ClipboardList, Activity } from "lucide-react";
+import { Copy, Plus, RefreshCw, Users, AlertCircle, ClipboardList, Activity, Bell } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -152,6 +152,22 @@ function CoachHome() {
     } catch {
       toast.error("Copy failed");
     }
+  };
+
+  const nudgeAthlete = async (athleteId: string, name: string) => {
+    if (!profile) return;
+    const { error } = await supabase.from("nudges").insert({
+      recipient_id: athleteId,
+      sender_id: profile.id,
+      type: "checkin_reminder",
+      message: `Coach ${profile.first_name ?? ""} reminded you to complete your daily check-in.`.trim(),
+      link_path: "/athlete/wellness",
+    });
+    if (error) {
+      toast.error("Could not send nudge");
+      return;
+    }
+    toast.success(`Nudge sent to ${name}`);
   };
 
   if (!profile) return null;
@@ -326,8 +342,19 @@ function CoachHome() {
                             ? `Last: ${stat.last_exercise_name}`
                             : "No recent log"}
                         </span>
-                        <span>{stat?.total_game_minutes ?? 0} min played</span>
+                        <span>{stat?.total_game_minutes ?? 0} min</span>
                       </div>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          void nudgeAthlete(a.id, full);
+                        }}
+                        className="mt-2 w-full inline-flex items-center justify-center gap-1 rounded-full bg-secondary hover:bg-gold hover:text-navy-deep transition-colors px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider"
+                      >
+                        <Bell className="h-3 w-3" /> Nudge to check in
+                      </button>
                     </Link>
                   );
                 })}
