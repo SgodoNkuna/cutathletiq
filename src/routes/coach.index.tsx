@@ -154,6 +154,22 @@ function CoachHome() {
     }
   };
 
+  const nudgeAthlete = async (athleteId: string, name: string) => {
+    if (!profile) return;
+    const { error } = await supabase.from("nudges").insert({
+      recipient_id: athleteId,
+      sender_id: profile.id,
+      type: "checkin_reminder",
+      message: `Coach ${profile.first_name ?? ""} reminded you to complete your daily check-in.`.trim(),
+      link_path: "/athlete/wellness",
+    });
+    if (error) {
+      toast.error("Could not send nudge");
+      return;
+    }
+    toast.success(`Nudge sent to ${name}`);
+  };
+
   if (!profile) return null;
 
   const greetingName = profile.first_name?.trim() ? `Coach ${profile.first_name}` : "Coach";
