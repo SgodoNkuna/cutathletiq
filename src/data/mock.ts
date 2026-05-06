@@ -10,7 +10,16 @@ export const ROLES: { id: Role; label: string; emoji: string }[] = [
   { id: "admin", label: "Admin", emoji: "🛡️" },
 ];
 
-export const SPORTS = ["Rugby", "Football", "Athletics", "Netball", "Basketball"] as const;
+export const SPORTS = [
+  "Rugby",
+  "Football",
+  "Netball",
+  "Basketball",
+  "Athletics",
+  "Cricket",
+  "Hockey",
+  "Other",
+] as const;
 export type Sport = (typeof SPORTS)[number];
 
 export type EventKind = "gym" | "physio" | "game" | "tournament" | "team" | "misc";
