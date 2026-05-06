@@ -66,6 +66,7 @@ function InjuryPage() {
       athlete_id: profile.id,
       body_regions: Object.keys(pains),
       pain_level: maxPain,
+      function_score: functionScore,
       notes: notes.trim() || null,
     });
     setSubmitting(false);
