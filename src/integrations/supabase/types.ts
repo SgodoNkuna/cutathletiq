@@ -353,6 +353,7 @@ export type Database = {
         Row: {
           athlete_id: string
           body_regions: string[]
+          function_score: number | null
           id: string
           notes: string | null
           pain_level: number
@@ -361,6 +362,7 @@ export type Database = {
         Insert: {
           athlete_id: string
           body_regions?: string[]
+          function_score?: number | null
           id?: string
           notes?: string | null
           pain_level: number
@@ -369,6 +371,7 @@ export type Database = {
         Update: {
           athlete_id?: string
           body_regions?: string[]
+          function_score?: number | null
           id?: string
           notes?: string | null
           pain_level?: number
