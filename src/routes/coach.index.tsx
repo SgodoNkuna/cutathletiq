@@ -342,8 +342,19 @@ function CoachHome() {
                             ? `Last: ${stat.last_exercise_name}`
                             : "No recent log"}
                         </span>
-                        <span>{stat?.total_game_minutes ?? 0} min played</span>
+                        <span>{stat?.total_game_minutes ?? 0} min</span>
                       </div>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          void nudgeAthlete(a.id, full);
+                        }}
+                        className="mt-2 w-full inline-flex items-center justify-center gap-1 rounded-full bg-secondary hover:bg-gold hover:text-navy-deep transition-colors px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider"
+                      >
+                        <Bell className="h-3 w-3" /> Nudge to check in
+                      </button>
                     </Link>
                   );
                 })}
