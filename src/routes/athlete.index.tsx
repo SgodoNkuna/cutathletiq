@@ -4,7 +4,7 @@ import { MobileFrame } from "@/components/MobileFrame";
 import { SectionHeader } from "@/components/primitives";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
-import { Dumbbell, HeartPulse, Trophy, ChevronRight, Loader2, Users, Moon } from "lucide-react";
+import { Dumbbell, HeartPulse, Trophy, ChevronRight, Loader2, Users, Moon, ClipboardCheck, History } from "lucide-react";
 import { fetchUpcomingSessionsForAthlete } from "@/lib/hooks/use-coach-programme";
 
 export const Route = createFileRoute("/athlete/")({
@@ -208,6 +208,30 @@ function AthleteHome() {
                 <div>
                   <div className="text-sm font-bold">Daily wellness</div>
                   <div className="text-[11px] text-muted-foreground">Sleep & readiness</div>
+                </div>
+              </Link>
+              <Link
+                to="/athlete/post-workout"
+                className="bg-card rounded-xl border p-3 flex items-center gap-3 hover:border-gold transition-colors"
+              >
+                <div className="bg-success/10 text-success rounded-lg p-2">
+                  <ClipboardCheck className="h-5 w-5" />
+                </div>
+                <div>
+                  <div className="text-sm font-bold">After workout</div>
+                  <div className="text-[11px] text-muted-foreground">RPE · fatigue · mood</div>
+                </div>
+              </Link>
+              <Link
+                to="/athlete/history"
+                className="bg-card rounded-xl border p-3 flex items-center gap-3 hover:border-gold transition-colors"
+              >
+                <div className="bg-navy/10 text-navy rounded-lg p-2">
+                  <History className="h-5 w-5" />
+                </div>
+                <div>
+                  <div className="text-sm font-bold">Daily log history</div>
+                  <div className="text-[11px] text-muted-foreground">Pain · function · trends</div>
                 </div>
               </Link>
               <Link

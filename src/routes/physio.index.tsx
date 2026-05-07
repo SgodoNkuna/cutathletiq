@@ -138,12 +138,20 @@ function PhysioHome() {
         <SectionHeader
           title="Injury inbox"
           action={
-            <Link
-              to="/physio/log"
-              className="text-[11px] font-bold text-navy uppercase tracking-wider"
-            >
-              Log case →
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link
+                to="/physio/case"
+                className="text-[11px] font-bold text-navy uppercase tracking-wider"
+              >
+                Notes & RTP →
+              </Link>
+              <Link
+                to="/physio/log"
+                className="text-[11px] font-bold text-navy uppercase tracking-wider"
+              >
+                Log case →
+              </Link>
+            </div>
           }
         />
 
