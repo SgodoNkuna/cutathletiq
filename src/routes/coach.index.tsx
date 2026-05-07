@@ -368,3 +368,128 @@ function CoachHome() {
     </MobileFrame>
   );
 }
+
+function RtpWidget({ athletes }: { athletes: Member[] }) {
+  const [rows, setRows] = React.useState<
+    { athlete_id: string; latest: number | null; trend: SparkPoint[]; rtp: string | null }[]
+  >([]);
+  const [onlyInjured, setOnlyInjured] = React.useState(false);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    if (athletes.length === 0) {
+      setLoading(false);
+      return;
+    }
+    const ids = athletes.map((a) => a.id);
+    void (async () => {
+      const since = new Date();
+      since.setDate(since.getDate() - 13);
+      const [checkRes, injRes] = await Promise.all([
+        supabase
+          .from("injury_checkins")
+          .select("athlete_id, function_score, submitted_at")
+          .in("athlete_id", ids)
+          .gte("submitted_at", since.toISOString())
+          .order("submitted_at", { ascending: true }),
+        supabase
+          .from("injury_records")
+          .select("athlete_id, rtp_status, actual_rtp_date")
+          .in("athlete_id", ids)
+          .is("actual_rtp_date", null),
+      ]);
+      const byAthlete: Record<string, SparkPoint[]> = {};
+      for (const r of (checkRes.data ?? []) as Array<{
+        athlete_id: string;
+        function_score: number | null;
+        submitted_at: string;
+      }>) {
+        if (typeof r.function_score !== "number") continue;
+        (byAthlete[r.athlete_id] ??= []).push({
+          label: r.submitted_at,
+          value: r.function_score,
+        });
+      }
+      const injMap: Record<string, string> = {};
+      for (const r of (injRes.data ?? []) as Array<{ athlete_id: string; rtp_status: string }>) {
+        injMap[r.athlete_id] = r.rtp_status;
+      }
+      setRows(
+        ids.map((id) => {
+          const series = byAthlete[id] ?? [];
+          const latest = series.length > 0 ? series[series.length - 1].value : null;
+          return { athlete_id: id, latest, trend: series.slice(-7), rtp: injMap[id] ?? null };
+        }),
+      );
+      setLoading(false);
+    })();
+  }, [athletes]);
+
+  const visible = rows.filter((r) => (onlyInjured ? r.rtp !== null : true));
+
+  return (
+    <>
+      <SectionHeader
+        title="Return-to-play /10"
+        action={
+          <button
+            type="button"
+            onClick={() => setOnlyInjured((v) => !v)}
+            className="text-[10px] font-bold uppercase tracking-wider rounded-full px-2.5 py-1 border bg-card hover:bg-secondary"
+          >
+            {onlyInjured ? "All athletes" : "Injured only"}
+          </button>
+        }
+      />
+      {loading ? (
+        <div className="bg-card border rounded-xl p-4 text-xs text-muted-foreground">Loading…</div>
+      ) : visible.length === 0 ? (
+        <div className="bg-card border rounded-xl p-4 text-xs text-muted-foreground">
+          {onlyInjured ? "No injured athletes." : "No function scores logged yet."}
+        </div>
+      ) : (
+        <div className="bg-card border rounded-xl divide-y">
+          {visible.map((r) => {
+            const a = athletes.find((x) => x.id === r.athlete_id);
+            const name =
+              `${a?.first_name ?? ""} ${a?.last_name ?? ""}`.trim() || "Athlete";
+            const color =
+              r.latest === null
+                ? "text-muted-foreground"
+                : r.latest >= 8
+                  ? "text-success"
+                  : r.latest >= 5
+                    ? "text-amber-600"
+                    : "text-destructive";
+            return (
+              <div key={r.athlete_id} className="p-3 flex items-center gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-bold truncate flex items-center gap-1.5">
+                    {name}
+                    {r.rtp && (
+                      <span className="text-[9px] font-bold uppercase tracking-wider rounded-full bg-destructive/10 text-destructive px-1.5 py-0.5">
+                        {r.rtp}
+                      </span>
+                    )}
+                  </div>
+                  <div className="mt-1 max-w-[140px]">
+                    {r.trend.length > 1 ? (
+                      <Sparkline data={r.trend} height={28} yMin={0} yMax={10} showLastLabel={false} />
+                    ) : (
+                      <div className="text-[10px] text-muted-foreground">No trend yet</div>
+                    )}
+                  </div>
+                </div>
+                <div className={`font-display text-2xl leading-none ${color}`}>
+                  {r.latest ?? "—"}
+                  <span className="text-xs text-muted-foreground">/10</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </>
+  );
+}
+
