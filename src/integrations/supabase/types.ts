@@ -405,6 +405,7 @@ export type Database = {
           id: string
           injury_type: string
           physio_id: string
+          rtp_notes: string | null
           rtp_status: Database["public"]["Enums"]["rtp_status"]
           severity: number
           treatment_notes: string | null
@@ -420,6 +421,7 @@ export type Database = {
           id?: string
           injury_type: string
           physio_id: string
+          rtp_notes?: string | null
           rtp_status?: Database["public"]["Enums"]["rtp_status"]
           severity: number
           treatment_notes?: string | null
@@ -435,6 +437,7 @@ export type Database = {
           id?: string
           injury_type?: string
           physio_id?: string
+          rtp_notes?: string | null
           rtp_status?: Database["public"]["Enums"]["rtp_status"]
           severity?: number
           treatment_notes?: string | null
@@ -595,6 +598,78 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      physio_case_notes: {
+        Row: {
+          athlete_id: string
+          case_date: string
+          created_at: string
+          id: string
+          injury_record_id: string | null
+          note: string
+          physio_id: string
+          updated_at: string
+        }
+        Insert: {
+          athlete_id: string
+          case_date?: string
+          created_at?: string
+          id?: string
+          injury_record_id?: string | null
+          note: string
+          physio_id: string
+          updated_at?: string
+        }
+        Update: {
+          athlete_id?: string
+          case_date?: string
+          created_at?: string
+          id?: string
+          injury_record_id?: string | null
+          note?: string
+          physio_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      post_workout_logs: {
+        Row: {
+          athlete_id: string
+          created_at: string
+          fatigue: number
+          id: string
+          log_date: string
+          mood: number
+          notes: string | null
+          rpe: number
+          session_id: string | null
+          soreness: number
+        }
+        Insert: {
+          athlete_id: string
+          created_at?: string
+          fatigue: number
+          id?: string
+          log_date?: string
+          mood: number
+          notes?: string | null
+          rpe: number
+          session_id?: string | null
+          soreness: number
+        }
+        Update: {
+          athlete_id?: string
+          created_at?: string
+          fatigue?: number
+          id?: string
+          log_date?: string
+          mood?: number
+          notes?: string | null
+          rpe?: number
+          session_id?: string | null
+          soreness?: number
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
