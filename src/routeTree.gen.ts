@@ -29,6 +29,7 @@ import { Route as CoachIndexRouteImport } from './routes/coach.index'
 import { Route as AthleteIndexRouteImport } from './routes/athlete.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as PhysioLogRouteImport } from './routes/physio.log'
+import { Route as PhysioCaseRouteImport } from './routes/physio.case'
 import { Route as DevDiagnosticsRouteImport } from './routes/dev.diagnostics'
 import { Route as CoachWellnessRouteImport } from './routes/coach.wellness'
 import { Route as CoachProgramRouteImport } from './routes/coach.program'
@@ -36,7 +37,9 @@ import { Route as CoachGamesRouteImport } from './routes/coach.games'
 import { Route as AthleteWorkoutRouteImport } from './routes/athlete.workout'
 import { Route as AthleteWellnessRouteImport } from './routes/athlete.wellness'
 import { Route as AthleteProgressRouteImport } from './routes/athlete.progress'
+import { Route as AthletePostWorkoutRouteImport } from './routes/athlete.post-workout'
 import { Route as AthleteInjuryRouteImport } from './routes/athlete.injury'
+import { Route as AthleteHistoryRouteImport } from './routes/athlete.history'
 import { Route as AdminTeamsRouteImport } from './routes/admin.teams'
 import { Route as AdminSessionsRouteImport } from './routes/admin.sessions'
 import { Route as AdminInvitesRouteImport } from './routes/admin.invites'
@@ -143,6 +146,11 @@ const PhysioLogRoute = PhysioLogRouteImport.update({
   path: '/physio/log',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PhysioCaseRoute = PhysioCaseRouteImport.update({
+  id: '/physio/case',
+  path: '/physio/case',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DevDiagnosticsRoute = DevDiagnosticsRouteImport.update({
   id: '/dev/diagnostics',
   path: '/dev/diagnostics',
@@ -178,9 +186,19 @@ const AthleteProgressRoute = AthleteProgressRouteImport.update({
   path: '/athlete/progress',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AthletePostWorkoutRoute = AthletePostWorkoutRouteImport.update({
+  id: '/athlete/post-workout',
+  path: '/athlete/post-workout',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AthleteInjuryRoute = AthleteInjuryRouteImport.update({
   id: '/athlete/injury',
   path: '/athlete/injury',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AthleteHistoryRoute = AthleteHistoryRouteImport.update({
+  id: '/athlete/history',
+  path: '/athlete/history',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminTeamsRoute = AdminTeamsRouteImport.update({
@@ -229,7 +247,9 @@ export interface FileRoutesByFullPath {
   '/admin/invites': typeof AdminInvitesRoute
   '/admin/sessions': typeof AdminSessionsRoute
   '/admin/teams': typeof AdminTeamsRoute
+  '/athlete/history': typeof AthleteHistoryRoute
   '/athlete/injury': typeof AthleteInjuryRoute
+  '/athlete/post-workout': typeof AthletePostWorkoutRoute
   '/athlete/progress': typeof AthleteProgressRoute
   '/athlete/wellness': typeof AthleteWellnessRoute
   '/athlete/workout': typeof AthleteWorkoutRoute
@@ -237,6 +257,7 @@ export interface FileRoutesByFullPath {
   '/coach/program': typeof CoachProgramRoute
   '/coach/wellness': typeof CoachWellnessRoute
   '/dev/diagnostics': typeof DevDiagnosticsRoute
+  '/physio/case': typeof PhysioCaseRoute
   '/physio/log': typeof PhysioLogRoute
   '/admin/': typeof AdminIndexRoute
   '/athlete/': typeof AthleteIndexRoute
@@ -264,7 +285,9 @@ export interface FileRoutesByTo {
   '/admin/invites': typeof AdminInvitesRoute
   '/admin/sessions': typeof AdminSessionsRoute
   '/admin/teams': typeof AdminTeamsRoute
+  '/athlete/history': typeof AthleteHistoryRoute
   '/athlete/injury': typeof AthleteInjuryRoute
+  '/athlete/post-workout': typeof AthletePostWorkoutRoute
   '/athlete/progress': typeof AthleteProgressRoute
   '/athlete/wellness': typeof AthleteWellnessRoute
   '/athlete/workout': typeof AthleteWorkoutRoute
@@ -272,6 +295,7 @@ export interface FileRoutesByTo {
   '/coach/program': typeof CoachProgramRoute
   '/coach/wellness': typeof CoachWellnessRoute
   '/dev/diagnostics': typeof DevDiagnosticsRoute
+  '/physio/case': typeof PhysioCaseRoute
   '/physio/log': typeof PhysioLogRoute
   '/admin': typeof AdminIndexRoute
   '/athlete': typeof AthleteIndexRoute
@@ -300,7 +324,9 @@ export interface FileRoutesById {
   '/admin/invites': typeof AdminInvitesRoute
   '/admin/sessions': typeof AdminSessionsRoute
   '/admin/teams': typeof AdminTeamsRoute
+  '/athlete/history': typeof AthleteHistoryRoute
   '/athlete/injury': typeof AthleteInjuryRoute
+  '/athlete/post-workout': typeof AthletePostWorkoutRoute
   '/athlete/progress': typeof AthleteProgressRoute
   '/athlete/wellness': typeof AthleteWellnessRoute
   '/athlete/workout': typeof AthleteWorkoutRoute
@@ -308,6 +334,7 @@ export interface FileRoutesById {
   '/coach/program': typeof CoachProgramRoute
   '/coach/wellness': typeof CoachWellnessRoute
   '/dev/diagnostics': typeof DevDiagnosticsRoute
+  '/physio/case': typeof PhysioCaseRoute
   '/physio/log': typeof PhysioLogRoute
   '/admin/': typeof AdminIndexRoute
   '/athlete/': typeof AthleteIndexRoute
@@ -337,7 +364,9 @@ export interface FileRouteTypes {
     | '/admin/invites'
     | '/admin/sessions'
     | '/admin/teams'
+    | '/athlete/history'
     | '/athlete/injury'
+    | '/athlete/post-workout'
     | '/athlete/progress'
     | '/athlete/wellness'
     | '/athlete/workout'
@@ -345,6 +374,7 @@ export interface FileRouteTypes {
     | '/coach/program'
     | '/coach/wellness'
     | '/dev/diagnostics'
+    | '/physio/case'
     | '/physio/log'
     | '/admin/'
     | '/athlete/'
@@ -372,7 +402,9 @@ export interface FileRouteTypes {
     | '/admin/invites'
     | '/admin/sessions'
     | '/admin/teams'
+    | '/athlete/history'
     | '/athlete/injury'
+    | '/athlete/post-workout'
     | '/athlete/progress'
     | '/athlete/wellness'
     | '/athlete/workout'
@@ -380,6 +412,7 @@ export interface FileRouteTypes {
     | '/coach/program'
     | '/coach/wellness'
     | '/dev/diagnostics'
+    | '/physio/case'
     | '/physio/log'
     | '/admin'
     | '/athlete'
@@ -407,7 +440,9 @@ export interface FileRouteTypes {
     | '/admin/invites'
     | '/admin/sessions'
     | '/admin/teams'
+    | '/athlete/history'
     | '/athlete/injury'
+    | '/athlete/post-workout'
     | '/athlete/progress'
     | '/athlete/wellness'
     | '/athlete/workout'
@@ -415,6 +450,7 @@ export interface FileRouteTypes {
     | '/coach/program'
     | '/coach/wellness'
     | '/dev/diagnostics'
+    | '/physio/case'
     | '/physio/log'
     | '/admin/'
     | '/athlete/'
@@ -443,7 +479,9 @@ export interface RootRouteChildren {
   AdminInvitesRoute: typeof AdminInvitesRoute
   AdminSessionsRoute: typeof AdminSessionsRoute
   AdminTeamsRoute: typeof AdminTeamsRoute
+  AthleteHistoryRoute: typeof AthleteHistoryRoute
   AthleteInjuryRoute: typeof AthleteInjuryRoute
+  AthletePostWorkoutRoute: typeof AthletePostWorkoutRoute
   AthleteProgressRoute: typeof AthleteProgressRoute
   AthleteWellnessRoute: typeof AthleteWellnessRoute
   AthleteWorkoutRoute: typeof AthleteWorkoutRoute
@@ -451,6 +489,7 @@ export interface RootRouteChildren {
   CoachProgramRoute: typeof CoachProgramRoute
   CoachWellnessRoute: typeof CoachWellnessRoute
   DevDiagnosticsRoute: typeof DevDiagnosticsRoute
+  PhysioCaseRoute: typeof PhysioCaseRoute
   PhysioLogRoute: typeof PhysioLogRoute
   AdminIndexRoute: typeof AdminIndexRoute
   AthleteIndexRoute: typeof AthleteIndexRoute
@@ -601,6 +640,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PhysioLogRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/physio/case': {
+      id: '/physio/case'
+      path: '/physio/case'
+      fullPath: '/physio/case'
+      preLoaderRoute: typeof PhysioCaseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dev/diagnostics': {
       id: '/dev/diagnostics'
       path: '/dev/diagnostics'
@@ -650,11 +696,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AthleteProgressRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/athlete/post-workout': {
+      id: '/athlete/post-workout'
+      path: '/athlete/post-workout'
+      fullPath: '/athlete/post-workout'
+      preLoaderRoute: typeof AthletePostWorkoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/athlete/injury': {
       id: '/athlete/injury'
       path: '/athlete/injury'
       fullPath: '/athlete/injury'
       preLoaderRoute: typeof AthleteInjuryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/athlete/history': {
+      id: '/athlete/history'
+      path: '/athlete/history'
+      fullPath: '/athlete/history'
+      preLoaderRoute: typeof AthleteHistoryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/teams': {
@@ -715,7 +775,9 @@ const rootRouteChildren: RootRouteChildren = {
   AdminInvitesRoute: AdminInvitesRoute,
   AdminSessionsRoute: AdminSessionsRoute,
   AdminTeamsRoute: AdminTeamsRoute,
+  AthleteHistoryRoute: AthleteHistoryRoute,
   AthleteInjuryRoute: AthleteInjuryRoute,
+  AthletePostWorkoutRoute: AthletePostWorkoutRoute,
   AthleteProgressRoute: AthleteProgressRoute,
   AthleteWellnessRoute: AthleteWellnessRoute,
   AthleteWorkoutRoute: AthleteWorkoutRoute,
@@ -723,6 +785,7 @@ const rootRouteChildren: RootRouteChildren = {
   CoachProgramRoute: CoachProgramRoute,
   CoachWellnessRoute: CoachWellnessRoute,
   DevDiagnosticsRoute: DevDiagnosticsRoute,
+  PhysioCaseRoute: PhysioCaseRoute,
   PhysioLogRoute: PhysioLogRoute,
   AdminIndexRoute: AdminIndexRoute,
   AthleteIndexRoute: AthleteIndexRoute,
@@ -733,12 +796,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}
