@@ -265,6 +265,8 @@ function CoachHome() {
             />
 
             <RtpWidget athletes={athletes} />
+
+            {athletes.length === 0 ? (
               <div className="bg-card rounded-xl border p-5 text-center text-sm text-muted-foreground">
                 No athletes have joined yet. Share the join code above.
               </div>
