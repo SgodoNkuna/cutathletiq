@@ -3,6 +3,7 @@ import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/r
 import { AuthProvider } from "@/lib/auth-context";
 import { Toaster } from "@/components/ui/sonner";
 import { DevErrorBoundary } from "@/components/DevErrorBoundary";
+import { InstallBanner } from "@/components/InstallBanner";
 import { checkStartupHealth } from "@/lib/server/startup.functions";
 import { toast } from "sonner";
 
@@ -57,9 +58,17 @@ export const Route = createRootRoute({
       { name: "twitter:description", content: "A sports team management app for coaches, athletes, and physios." },
       { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e7abf0be-385d-4655-8d37-1ffff2ec471c/id-preview-6ab967c5--4de23600-c8cc-4ba5-b0fa-59af063a1f63.lovable.app-1777163208029.png" },
       { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e7abf0be-385d-4655-8d37-1ffff2ec471c/id-preview-6ab967c5--4de23600-c8cc-4ba5-b0fa-59af063a1f63.lovable.app-1777163208029.png" },
+      { name: "theme-color", content: "#003478" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "CUT Athletiq" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "apple-touch-icon", href: "/icon-192.png" },
+      { rel: "icon", type: "image/png", sizes: "192x192", href: "/icon-192.png" },
+      { rel: "icon", type: "image/png", sizes: "512x512", href: "/icon-512.png" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "" },
       {
@@ -119,6 +128,7 @@ function RootComponent() {
     <DevErrorBoundary>
       <AuthProvider>
         <Outlet />
+        <InstallBanner />
         <Toaster position="top-center" />
       </AuthProvider>
     </DevErrorBoundary>
