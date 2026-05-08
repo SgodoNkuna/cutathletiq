@@ -1,7 +1,8 @@
 import * as React from "react";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
-import { Moon, X } from "lucide-react";
+import { Moon, X, Zap, Sparkles } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
 
 const STORAGE_KEY = (uid: string) => `wellness-gate:${uid}:${new Date().toISOString().slice(0, 10)}`;
@@ -9,13 +10,15 @@ const STORAGE_KEY = (uid: string) => `wellness-gate:${uid}:${new Date().toISOStr
 /**
  * Daily wellness gate — first open per day intercepts athletes (and only athletes).
  * Suppressed if already submitted today, skipped today, or dismissed locally today.
+ *
+ * All ratings are now on a 0–10 scale (sliders) for consistency with RPE / RTP.
  */
 export function WellnessGate() {
   const { profile } = useAuth();
   const [open, setOpen] = React.useState(false);
-  const [sleep, setSleep] = React.useState("8");
-  const [quality, setQuality] = React.useState(4);
-  const [ready, setReady] = React.useState(4);
+  const [sleep, setSleep] = React.useState(8);
+  const [quality, setQuality] = React.useState(7);
+  const [ready, setReady] = React.useState(7);
   const [saving, setSaving] = React.useState(false);
 
   React.useEffect(() => {
@@ -31,8 +34,7 @@ export function WellnessGate() {
           .eq("athlete_id", profile.id)
           .eq("checkin_date", today)
           .maybeSingle(),
-        (supabase as any)
-          .from("wellness_skips")
+        (supabase as never as { from: (t: string) => { select: (s: string) => { eq: (a: string, b: unknown) => { eq: (a: string, b: unknown) => { maybeSingle: () => Promise<{ data: unknown }> } } } } }).from("wellness_skips")
           .select("id")
           .eq("athlete_id", profile.id)
           .eq("skip_date", today)
@@ -47,8 +49,7 @@ export function WellnessGate() {
   const close = async () => {
     localStorage.setItem(STORAGE_KEY(profile.id), "1");
     setOpen(false);
-    // Persist skip so it carries across devices for today
-    await (supabase as any)
+    await (supabase as never as { from: (t: string) => { upsert: (r: unknown, o: unknown) => Promise<unknown> } })
       .from("wellness_skips")
       .upsert(
         { athlete_id: profile.id, skip_date: new Date().toISOString().slice(0, 10) },
@@ -57,8 +58,7 @@ export function WellnessGate() {
   };
 
   const submit = async () => {
-    const hours = Number(sleep);
-    if (!Number.isFinite(hours) || hours < 0 || hours > 24) {
+    if (sleep < 0 || sleep > 24) {
       toast.error("Enter a valid sleep value (0–24)");
       return;
     }
@@ -66,7 +66,7 @@ export function WellnessGate() {
     const { error } = await supabase.from("wellness_checkins").insert({
       athlete_id: profile.id,
       checkin_date: new Date().toISOString().slice(0, 10),
-      sleep_hours: hours,
+      sleep_hours: sleep,
       sleep_quality: quality,
       readiness: ready,
     });
@@ -80,13 +80,13 @@ export function WellnessGate() {
       toast.error("Could not save");
       return;
     }
-    toast.success("Logged — have a good session");
+    toast.success("Logged — have a good session 🔥");
     close();
   };
 
   return (
-    <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
-      <div className="bg-card rounded-3xl border-2 border-gold/40 shadow-2xl w-full max-w-[420px] p-5 relative">
+    <div className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-up">
+      <div className="bg-card rounded-3xl border-2 border-gold/40 shadow-2xl w-full max-w-[440px] p-5 relative">
         <button
           onClick={close}
           aria-label="Skip today"
@@ -100,43 +100,44 @@ export function WellnessGate() {
             Daily wellness check
           </div>
         </div>
-        <h2 className="font-display text-2xl leading-tight">How did you sleep?</h2>
+        <h2 className="font-display text-2xl leading-tight">How's your body today?</h2>
         <p className="text-xs text-muted-foreground mt-1">
-          Quick log helps your coach manage today's session load.
+          30 seconds. Helps your coach manage today's load.
         </p>
 
-        <div className="space-y-3 mt-4">
-          <label className="block">
-            <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1">
-              Sleep (hours)
-            </div>
-            <input
-              type="number"
-              min={0}
-              max={24}
-              step={0.5}
-              value={sleep}
-              onChange={(e) => setSleep(e.target.value)}
-              className="w-full rounded-md border bg-background px-3 py-2 text-sm font-bold"
-            />
-          </label>
-          <Scale label="Sleep quality" value={quality} onChange={setQuality} />
-          <Scale label="Readiness for training" value={ready} onChange={setReady} />
+        <div className="space-y-4 mt-5">
+          <SleepInput value={sleep} onChange={setSleep} />
+          <ScaleSlider
+            label="Sleep quality"
+            value={quality}
+            onChange={setQuality}
+            icon={<Sparkles className="h-3.5 w-3.5" />}
+            lowLabel="Restless"
+            highLabel="Deep"
+          />
+          <ScaleSlider
+            label="Readiness for training"
+            value={ready}
+            onChange={setReady}
+            icon={<Zap className="h-3.5 w-3.5" />}
+            lowLabel="Drained"
+            highLabel="Locked-in"
+          />
         </div>
 
         <div className="flex gap-2 mt-5">
           <button
             onClick={close}
-            className="flex-1 rounded-full border py-2.5 text-xs font-bold uppercase tracking-wider"
+            className="flex-1 rounded-full border-2 py-3 text-xs font-bold uppercase tracking-wider hover:bg-secondary"
           >
             Skip today
           </button>
           <button
             onClick={submit}
             disabled={saving}
-            className="flex-1 rounded-full bg-gold text-navy-deep py-2.5 text-xs font-bold uppercase tracking-wider disabled:opacity-60"
+            className="flex-[1.6] rounded-full bg-gold text-navy-deep py-3 text-xs font-bold uppercase tracking-wider disabled:opacity-60 hover:scale-[1.02] transition-transform shadow-lg"
           >
-            {saving ? "Saving…" : "Log"}
+            {saving ? "Saving…" : "Log check-in"}
           </button>
         </div>
       </div>
@@ -144,35 +145,73 @@ export function WellnessGate() {
   );
 }
 
-function Scale({
+function SleepInput({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  return (
+    <div>
+      <div className="flex items-baseline justify-between mb-1.5">
+        <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+          Sleep hours
+        </div>
+        <div className="font-display text-2xl text-navy leading-none">
+          {value.toFixed(1)}
+          <span className="text-xs text-muted-foreground ml-1">h</span>
+        </div>
+      </div>
+      <Slider
+        min={0}
+        max={12}
+        step={0.5}
+        value={[value]}
+        onValueChange={(v) => onChange(v[0] ?? 0)}
+      />
+      <div className="flex justify-between text-[9px] text-muted-foreground uppercase tracking-wider mt-1">
+        <span>0h</span>
+        <span>6h</span>
+        <span>12h</span>
+      </div>
+    </div>
+  );
+}
+
+export function ScaleSlider({
   label,
   value,
   onChange,
+  icon,
+  lowLabel,
+  highLabel,
 }: {
   label: string;
   value: number;
   onChange: (v: number) => void;
+  icon?: React.ReactNode;
+  lowLabel?: string;
+  highLabel?: string;
 }) {
+  const tone =
+    value <= 3 ? "text-destructive" : value <= 6 ? "text-warn" : "text-success";
   return (
     <div>
-      <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1">
-        {label}
+      <div className="flex items-baseline justify-between mb-1.5">
+        <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+          {icon}
+          {label}
+        </div>
+        <div className={`font-display text-2xl leading-none ${tone}`}>
+          {value}
+          <span className="text-xs text-muted-foreground ml-0.5">/10</span>
+        </div>
       </div>
-      <div className="flex gap-1">
-        {[1, 2, 3, 4, 5].map((n) => (
-          <button
-            key={n}
-            type="button"
-            onClick={() => onChange(n)}
-            className={`flex-1 py-2 rounded-md border-2 text-sm font-bold transition-colors ${
-              value === n
-                ? "bg-gold text-navy-deep border-gold"
-                : "bg-background border-muted text-muted-foreground"
-            }`}
-          >
-            {n}
-          </button>
-        ))}
+      <Slider
+        min={0}
+        max={10}
+        step={1}
+        value={[value]}
+        onValueChange={(v) => onChange(v[0] ?? 0)}
+      />
+      <div className="flex justify-between text-[9px] text-muted-foreground uppercase tracking-wider mt-1">
+        <span>{lowLabel ?? "Low"}</span>
+        <span>{highLabel ?? "High"}</span>
       </div>
     </div>
   );
