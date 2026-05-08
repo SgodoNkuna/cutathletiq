@@ -12,6 +12,9 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/signup")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    invite: typeof s.invite === "string" ? s.invite : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Create account — CUT Athletiq" },
@@ -23,6 +26,7 @@ export const Route = createFileRoute("/signup")({
 
 function SignupPage() {
   const navigate = useNavigate();
+  const { invite: inviteToken } = Route.useSearch();
   const [first, setFirst] = React.useState("");
   const [last, setLast] = React.useState("");
   const [email, setEmail] = React.useState("");
@@ -34,6 +38,40 @@ function SignupPage() {
   const [consentCoach, setConsentCoach] = React.useState(false);
   const [consentPhysio, setConsentPhysio] = React.useState(false);
   const [submitting, setSubmitting] = React.useState(false);
+  const [inviteInfo, setInviteInfo] = React.useState<{
+    teamName: string;
+    teamSport: string;
+    error?: string;
+  } | null>(null);
+
+  // Look up invite token (read-only) on mount
+  React.useEffect(() => {
+    if (!inviteToken) return;
+    void (async () => {
+      const { data, error } = await supabase.rpc("lookup_team_invite", { _token: inviteToken });
+      const row = (data as Array<{
+        team_name: string;
+        team_sport: string;
+        used: boolean;
+        expired: boolean;
+      }> | null)?.[0];
+      if (error || !row) {
+        setInviteInfo({ teamName: "", teamSport: "", error: "Invite link not found." });
+        return;
+      }
+      if (row.used) {
+        setInviteInfo({ teamName: row.team_name, teamSport: row.team_sport, error: "This invite has already been used." });
+        return;
+      }
+      if (row.expired) {
+        setInviteInfo({ teamName: row.team_name, teamSport: row.team_sport, error: "This invite has expired. Ask your coach for a new one." });
+        return;
+      }
+      setInviteInfo({ teamName: row.team_name, teamSport: row.team_sport });
+      setRole("athlete");
+      if (row.team_sport) setSport(row.team_sport);
+    })();
+  }, [inviteToken]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,6 +131,15 @@ function SignupPage() {
         toast.success("Account created. Please sign in.");
         navigate({ to: "/login" });
         return;
+      }
+      // If we arrived via invite link, consume it now (joins team)
+      if (inviteToken && !inviteInfo?.error) {
+        const { error: cErr } = await supabase.rpc("consume_team_invite", { _token: inviteToken });
+        if (cErr) {
+          toast.error("Could not join team automatically. You can join manually.");
+        } else {
+          toast.success(`Joined ${inviteInfo?.teamName ?? "your team"}!`);
+        }
       }
       toast.success("Welcome to CUT Athletiq!");
       navigate({ to: "/onboarding" });

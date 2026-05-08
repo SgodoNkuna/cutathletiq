@@ -88,11 +88,11 @@ export function NotificationBell() {
       <SheetTrigger asChild>
         <button
           aria-label={`Notifications (${unread} unread)`}
-          className="relative h-8 w-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+          className="relative h-9 w-9 rounded-full bg-gold/15 hover:bg-gold/25 ring-1 ring-gold/40 flex items-center justify-center transition-colors"
         >
-          <Bell className="h-4 w-4 text-white" />
+          <Bell className={cn("h-4 w-4 text-gold", unread > 0 && "animate-pulse")} fill={unread > 0 ? "currentColor" : "none"} />
           {unread > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] px-1 rounded-full bg-destructive text-white text-[9px] font-bold flex items-center justify-center">
+            <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] px-1 rounded-full bg-destructive text-white text-[9px] font-bold flex items-center justify-center ring-2 ring-navy-deep">
               {unread > 9 ? "9+" : unread}
             </span>
           )}

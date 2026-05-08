@@ -931,6 +931,50 @@ export type Database = {
         }
         Relationships: []
       }
+      team_invites: {
+        Row: {
+          created_at: string
+          created_by: string
+          expires_at: string
+          id: string
+          note: string | null
+          team_id: string
+          token: string
+          used_at: string | null
+          used_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          expires_at?: string
+          id?: string
+          note?: string | null
+          team_id: string
+          token: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          expires_at?: string
+          id?: string
+          note?: string | null
+          team_id?: string
+          token?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_invites_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       teams: {
         Row: {
           coach_id: string
@@ -1218,6 +1262,7 @@ export type Database = {
       }
     }
     Functions: {
+      consume_team_invite: { Args: { _token: string }; Returns: string }
       find_team_by_code: {
         Args: { _code: string }
         Returns: {
@@ -1234,6 +1279,18 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      lookup_team_invite: {
+        Args: { _token: string }
+        Returns: {
+          expired: boolean
+          expires_at: string
+          invite_id: string
+          team_id: string
+          team_name: string
+          team_sport: string
+          used: boolean
+        }[]
       }
       my_team_id: { Args: never; Returns: string }
       profile_self_update_safe: {
