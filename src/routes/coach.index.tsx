@@ -239,6 +239,8 @@ function CoachHome() {
               </div>
             </div>
 
+            <InviteLinkCard teamId={team.id} coachId={profile.id} />
+
             <SectionHeader
               title="Squad — last 14 days"
               action={
