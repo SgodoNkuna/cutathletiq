@@ -35,7 +35,7 @@ const teamRef = teamId;
 const token = crypto.randomUUID();
 const expires = new Date(Date.now() + 7 * 86400 * 1000).toISOString();
 const { error: insErr } = await admin.from("team_invites").insert({
-  team_id: coachProfile.team_id, token, created_by: coachProfile.id, expires_at: expires,
+  team_id: teamRef, token, created_by: coachProfile.id, expires_at: expires,
 });
 if (insErr) fail("Insert team_invites: " + insErr.message);
 ok(`Minted invite token ${token.slice(0, 8)}…`);
