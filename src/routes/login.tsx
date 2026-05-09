@@ -140,8 +140,8 @@ function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-secondary via-background to-secondary/40 flex items-center justify-center py-4 px-2">
-      <div className="relative w-full max-w-[430px] min-h-[calc(100vh-2rem)] sm:min-h-[860px] bg-background rounded-[2.25rem] sm:border-[10px] border-navy-deep shadow-2xl overflow-hidden flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-secondary via-background to-secondary/40 flex items-center justify-center py-4 px-2 md:py-10">
+      <div className="relative w-full max-w-[430px] md:max-w-lg min-h-[calc(100vh-2rem)] sm:min-h-[860px] md:min-h-0 bg-background rounded-[2.25rem] md:rounded-3xl sm:border-[10px] md:border-2 border-navy-deep shadow-2xl overflow-hidden flex flex-col">
         <div className="bg-navy text-white px-6 pt-10 pb-12 relative">
           <div className="flex items-center gap-3">
             <div className="bg-white rounded-lg p-1.5">
