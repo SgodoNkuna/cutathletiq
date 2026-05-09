@@ -63,6 +63,7 @@ ok("Signed in as new athlete");
 
 const { data: joinedTeam, error: rpcErr } = await userClient.rpc("consume_team_invite", { _token: token });
 if (rpcErr) fail("consume_team_invite: " + rpcErr.message);
+console.log("DEBUG joinedTeam:", JSON.stringify(joinedTeam), "len=", String(joinedTeam ?? "").length, "teamRef:", JSON.stringify(teamRef), "len=", String(teamRef).length);
 if (String(joinedTeam) !== String(teamRef)) fail(`Joined wrong team: ${joinedTeam}`);
 ok(`Joined correct team: ${joinedTeam}`);
 
