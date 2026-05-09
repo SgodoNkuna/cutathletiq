@@ -55,6 +55,12 @@ const { data: created, error: userErr } = await admin.auth.admin.createUser({
 if (userErr || !created.user) fail("Create user: " + (userErr?.message ?? "no user"));
 ok(`Created athlete ${email}`);
 
+// 4b. Ensure profile row exists (handle_new_user trigger swallows errors)
+await admin.from("profiles").upsert({
+  id: created.user.id, email, first_name: "E2E", last_name: "Invite", role: "athlete",
+  consent_coach_training: true, consent_physio_health: true, consent_at: new Date().toISOString(),
+});
+
 // 5. Sign in as the new user via anon client and consume the invite (RPC needs auth.uid())
 const userClient = createClient(url, anon, { auth: { persistSession: false } });
 const { error: signInErr } = await userClient.auth.signInWithPassword({ email, password });
