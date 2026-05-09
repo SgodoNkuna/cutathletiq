@@ -18,11 +18,18 @@ const admin = createClient(url, service, { auth: { persistSession: false } });
 const fail = (msg) => { console.error("✗", msg); process.exit(1); };
 const ok = (msg) => console.log("✓", msg);
 
-// 1. Find a coach + their team (use demo seed)
+// 1. Find a coach + a team they own (or are a member of)
 const { data: coachProfile } = await admin
   .from("profiles").select("id, team_id").eq("email", "demo-coach@cutathletiq.test").maybeSingle();
-if (!coachProfile?.team_id) fail("Demo coach has no team. Run scripts/seed-demo-accounts.mjs first.");
-ok(`Coach ${coachProfile.id} on team ${coachProfile.team_id}`);
+if (!coachProfile) fail("Demo coach not found. Run scripts/seed-demo-accounts.mjs first.");
+let teamId = coachProfile.team_id;
+if (!teamId) {
+  const { data: ownedTeam } = await admin.from("teams").select("id").eq("coach_id", coachProfile.id).maybeSingle();
+  teamId = ownedTeam?.id ?? null;
+}
+if (!teamId) fail("Demo coach owns no team.");
+ok(`Coach ${coachProfile.id} → team ${teamId}`);
+const teamRef = teamId;
 
 // 2. Mint invite token
 const token = crypto.randomUUID();
