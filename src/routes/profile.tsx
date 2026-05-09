@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { exportMyData, deleteMyAccount } from "@/lib/server/popia.functions";
 import { toast } from "sonner";
 import { Download, FileText, Loader2, LogOut, ShieldCheck, Trash2 } from "lucide-react";
+import { PWAStatusCard } from "@/components/PWAStatusCard";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
@@ -161,6 +162,7 @@ function ProfilePage() {
   return (
     <MobileFrame title="Profile">
       <div className="px-5 space-y-4 pb-6">
+        <PWAStatusCard />
         <div className="bg-card border rounded-2xl p-4 space-y-3">
           <div className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground">
             Account
