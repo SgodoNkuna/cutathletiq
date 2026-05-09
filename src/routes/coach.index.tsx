@@ -495,3 +495,104 @@ function RtpWidget({ athletes }: { athletes: Member[] }) {
   );
 }
 
+function InviteLinkCard({ teamId, coachId }: { teamId: string; coachId: string }) {
+  const [token, setToken] = React.useState<string | null>(null);
+  const [expiresAt, setExpiresAt] = React.useState<string | null>(null);
+  const [busy, setBusy] = React.useState(false);
+
+  const loadLatest = React.useCallback(async () => {
+    const { data } = await supabase
+      .from("team_invites")
+      .select("token, expires_at, used_at")
+      .eq("team_id", teamId)
+      .is("used_at", null)
+      .gt("expires_at", new Date().toISOString())
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (data) {
+      setToken(data.token);
+      setExpiresAt(data.expires_at);
+    }
+  }, [teamId]);
+
+  React.useEffect(() => {
+    void loadLatest();
+  }, [loadLatest]);
+
+  const generate = async () => {
+    setBusy(true);
+    const newToken =
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID().replace(/-/g, "")
+        : Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+    const { data, error } = await supabase
+      .from("team_invites")
+      .insert({ team_id: teamId, token: newToken, created_by: coachId })
+      .select("token, expires_at")
+      .maybeSingle();
+    setBusy(false);
+    if (error || !data) {
+      toast.error("Could not create invite link");
+      return;
+    }
+    setToken(data.token);
+    setExpiresAt(data.expires_at);
+    toast.success("Invite link ready — copy & share");
+  };
+
+  const link = token ? `${window.location.origin}/signup?invite=${token}` : "";
+
+  const copy = async () => {
+    if (!link) return;
+    try {
+      await navigator.clipboard.writeText(link);
+      toast.success("Invite link copied");
+    } catch {
+      toast.error("Copy failed");
+    }
+  };
+
+  return (
+    <div className="mt-3 bg-card border rounded-2xl p-4">
+      <div className="flex items-center justify-between gap-2">
+        <div>
+          <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            Single-use invite link
+          </div>
+          <div className="text-[11px] text-muted-foreground mt-0.5">
+            Each link works once and expires after 7 days.
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={generate}
+          disabled={busy}
+          className="inline-flex items-center gap-1 rounded-full bg-navy text-white px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider hover:bg-navy-deep disabled:opacity-60"
+        >
+          <Plus className="h-3 w-3" /> {token ? "New" : "Create"}
+        </button>
+      </div>
+      {token && (
+        <div className="mt-3 space-y-2">
+          <div className="text-[11px] font-mono break-all bg-secondary rounded-lg p-2 border">
+            {link}
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="text-[10px] text-muted-foreground">
+              Expires {expiresAt ? new Date(expiresAt).toLocaleDateString() : "—"}
+            </div>
+            <button
+              type="button"
+              onClick={copy}
+              className="inline-flex items-center gap-1 rounded-full bg-gold text-navy-deep px-3 py-1 text-[11px] font-bold uppercase tracking-wider"
+            >
+              <Copy className="h-3 w-3" /> Copy link
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
