@@ -5,8 +5,10 @@ import { SectionHeader } from "@/components/primitives";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { checkStartupHealth } from "@/lib/server/startup.functions";
+import { verifyAdminInviteWiring } from "@/lib/server/invite-debug.functions";
 import { toast } from "sonner";
-import { KeyRound, RefreshCw, Copy, Loader2, Eye, EyeOff, ShieldAlert } from "lucide-react";
+import { KeyRound, RefreshCw, Copy, Loader2, Eye, EyeOff, ShieldAlert, Bug, CheckCircle2, XCircle } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 export const Route = createFileRoute("/admin/invites")({
   head: () => ({
@@ -171,11 +173,102 @@ function AdminInvites() {
           })}
         </div>
 
+        <AdminInviteDebugCard />
+
         <div className="text-center text-[11px] text-muted-foreground mt-4">
           <Link to="/system-status" className="underline">View system status</Link> ·{" "}
           <Link to="/security" className="underline">Security notes</Link>
         </div>
       </div>
     </MobileFrame>
+  );
+}
+
+function AdminInviteDebugCard() {
+  const [busy, setBusy] = React.useState(false);
+  const [probe, setProbe] = React.useState("");
+  const [result, setResult] = React.useState<Awaited<ReturnType<typeof verifyAdminInviteWiring>> | null>(null);
+
+  const run = async () => {
+    setBusy(true);
+    try {
+      const res = await verifyAdminInviteWiring({ data: { probe: probe.trim() || undefined } });
+      setResult(res);
+      if (!res.ok) toast.error("ADMIN_INVITE_CODE not wired in either env or DB.");
+      else toast.success("Backend can read ADMIN_INVITE_CODE.");
+    } catch (e) {
+      console.error(e);
+      toast.error("Verification failed.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const Pill = ({ ok, label }: { ok: boolean; label: string }) => (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${
+        ok ? "bg-emerald-500/15 text-emerald-700" : "bg-destructive/15 text-destructive"
+      }`}
+    >
+      {ok ? <CheckCircle2 className="h-3 w-3" /> : <XCircle className="h-3 w-3" />} {label}
+    </span>
+  );
+
+  return (
+    <div className="mt-5 bg-card border-2 border-dashed border-navy/30 rounded-2xl p-4 space-y-3">
+      <div className="flex items-center gap-2">
+        <Bug className="h-4 w-4 text-navy" />
+        <h3 className="font-display text-lg leading-none">Admin invite-code wiring (debug)</h3>
+      </div>
+      <p className="text-[11px] text-muted-foreground">
+        Verifies the backend can read <code>ADMIN_INVITE_CODE</code> from the current environment
+        and/or the database. Optionally test a probe code to confirm signup would accept it.
+        The actual code is never returned.
+      </p>
+
+      <div className="flex gap-2">
+        <Input
+          value={probe}
+          onChange={(e) => setProbe(e.target.value.toUpperCase())}
+          placeholder="Probe code (optional)"
+          className="uppercase tracking-widest text-xs"
+        />
+        <button
+          onClick={run}
+          disabled={busy}
+          className="shrink-0 inline-flex items-center gap-1 rounded-full bg-navy text-white px-4 py-2 text-[11px] font-bold uppercase tracking-wider disabled:opacity-60"
+        >
+          {busy ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+          Run check
+        </button>
+      </div>
+
+      {result && (
+        <div className="rounded-lg border bg-secondary/40 p-3 space-y-2 text-xs">
+          <div className="flex flex-wrap gap-1.5">
+            <Pill ok={result.env.configured} label={`env ${result.env.configured ? `(${result.env.length} chars)` : "missing"}`} />
+            <Pill ok={result.db.configured} label={`db ${result.db.configured ? `(${result.db.length} chars)` : "missing"}`} />
+            {probe.trim() && (
+              <Pill
+                ok={result.probeMatches === "env" || result.probeMatches === "db"}
+                label={
+                  result.probeMatches === "env"
+                    ? "probe matches env"
+                    : result.probeMatches === "db"
+                      ? "probe matches db"
+                      : "probe rejected"
+                }
+              />
+            )}
+          </div>
+          <div className="text-[11px] text-muted-foreground space-y-0.5">
+            <div>NODE_ENV: <code>{result.runtime.nodeEnv}</code></div>
+            <div>Supabase project ref: <code>{result.runtime.supabaseRef}</code></div>
+            {result.db.updated_at && <div>DB code updated: {new Date(result.db.updated_at).toLocaleString()}</div>}
+            <div>Checked: {new Date(result.runtime.checkedAt).toLocaleTimeString()}</div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
