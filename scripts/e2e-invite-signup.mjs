@@ -63,12 +63,12 @@ ok("Signed in as new athlete");
 
 const { data: joinedTeam, error: rpcErr } = await userClient.rpc("consume_team_invite", { _token: token });
 if (rpcErr) fail("consume_team_invite: " + rpcErr.message);
-if (joinedTeam !== coachProfile.team_id) fail(`Joined wrong team: ${joinedTeam}`);
+if (String(joinedTeam) !== String(teamRef)) fail(`Joined wrong team: ${joinedTeam}`);
 ok(`Joined correct team: ${joinedTeam}`);
 
 // 6. Verify profile.team_id is set
 const { data: prof } = await admin.from("profiles").select("team_id").eq("id", created.user.id).maybeSingle();
-if (prof?.team_id !== coachProfile.team_id) fail(`Profile team_id mismatch: ${prof?.team_id}`);
+if (prof?.team_id !== teamRef) fail(`Profile team_id mismatch: ${prof?.team_id}`);
 ok("profiles.team_id matches");
 
 // 7. Re-sign-in works
