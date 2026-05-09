@@ -166,6 +166,34 @@ function SignupPage() {
           </div>
         </div>
 
+        {inviteInfo && (
+          <div
+            className={cn(
+              "mx-5 mt-4 rounded-xl border p-3 text-xs",
+              inviteInfo.error
+                ? "border-destructive/40 bg-destructive/5 text-destructive"
+                : "border-gold/50 bg-gold/10 text-navy-deep",
+            )}
+          >
+            {inviteInfo.error ? (
+              <div className="font-bold">{inviteInfo.error}</div>
+            ) : (
+              <>
+                <div className="font-bold uppercase tracking-wider text-[10px] text-muted-foreground">
+                  Team invite
+                </div>
+                <div className="font-bold mt-0.5">
+                  Joining {inviteInfo.teamName}
+                  {inviteInfo.teamSport ? ` · ${inviteInfo.teamSport}` : ""}
+                </div>
+                <div className="text-[11px] mt-0.5 opacity-80">
+                  Finish signing up and you'll be added automatically.
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
         <form onSubmit={submit} className="flex-1 overflow-y-auto px-5 py-5 space-y-3">
           <div className="grid grid-cols-2 gap-2">
             <div>
