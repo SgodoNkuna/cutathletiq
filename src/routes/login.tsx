@@ -7,7 +7,7 @@ import { useAuth, ROLE_HOME } from "@/lib/auth-context";
 import { Input } from "@/components/ui/input";
 import { TestModeStamp } from "@/components/TestModeStamp";
 import { toast } from "sonner";
-import { Loader2, FlaskConical, Copy, Mail, Phone } from "lucide-react";
+import { Loader2, FlaskConical, Copy, Mail, Phone, ShieldCheck, Trophy, Activity } from "lucide-react";
 import { devMockResetPassword } from "@/lib/server/dev.functions";
 
 export const Route = createFileRoute("/login")({
@@ -33,6 +33,7 @@ function LoginPage() {
   const [resetEmail, setResetEmail] = React.useState("");
   const [showReset, setShowReset] = React.useState(false);
   const [oauthBusy, setOauthBusy] = React.useState<"google" | "apple" | null>(null);
+  const [formError, setFormError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     if (authLoading || !profile) return;
@@ -40,12 +41,15 @@ function LoginPage() {
     else navigate({ to: ROLE_HOME[profile.role] });
   }, [profile, authLoading, navigate]);
 
+  const fail = (m: string) => {
+    setFormError(m);
+    toast.error(m);
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim() || !password) {
-      toast.error("Enter your email and password");
-      return;
-    }
+    setFormError(null);
+    if (!email.trim() || !password) return fail("Enter your email and password.");
     setSubmitting(true);
     const { error } = await supabase.auth.signInWithPassword({
       email: email.trim(),
@@ -54,26 +58,19 @@ function LoginPage() {
     setSubmitting(false);
     if (error) {
       const msg = error.message.toLowerCase();
-      if (msg.includes("invalid")) toast.error("Wrong email or password.");
-      else if (msg.includes("not confirmed")) toast.error("Please verify your email first.");
-      else toast.error("Could not sign in. Please try again.");
-      return;
+      if (msg.includes("invalid")) return fail("Wrong email or password.");
+      if (msg.includes("not confirmed")) return fail("Please verify your email first.");
+      return fail("Could not sign in. Please try again.");
     }
     toast.success("Signed in");
   };
 
   const sendReset = async () => {
-    if (!resetEmail.trim()) {
-      toast.error("Enter the email on your account");
-      return;
-    }
+    if (!resetEmail.trim()) return fail("Enter the email on your account.");
     const { error } = await supabase.auth.resetPasswordForEmail(resetEmail.trim(), {
       redirectTo: `${window.location.origin}/reset-password`,
     });
-    if (error) {
-      toast.error("Could not send reset email. Try again.");
-      return;
-    }
+    if (error) return fail("Could not send reset email. Try again.");
     toast.success("Check your inbox for a reset link.");
     setShowReset(false);
     setResetEmail("");
@@ -81,50 +78,45 @@ function LoginPage() {
 
   const oauth = async (provider: "google" | "apple") => {
     setOauthBusy(provider);
+    setFormError(null);
     try {
       const result = await lovable.auth.signInWithOAuth(provider, {
         redirect_uri: window.location.origin,
       });
-      if (result.error) {
-        toast.error(`Could not sign in with ${provider}.`);
-        return;
-      }
+      if (result.error) return fail(`Could not sign in with ${provider}.`);
       if (result.redirected) return;
       toast.success("Signed in");
     } catch {
-      toast.error(`Could not sign in with ${provider}.`);
+      fail(`Could not sign in with ${provider}.`);
     } finally {
       setOauthBusy(null);
     }
   };
 
   const sendOtp = async () => {
+    setFormError(null);
     const trimmed = phone.trim();
     if (!/^\+\d{8,15}$/.test(trimmed)) {
-      toast.error("Enter your phone in international format, e.g. +27821234567");
-      return;
+      return fail("Enter your phone in international format, e.g. +27821234567");
     }
     setSubmitting(true);
     const { error } = await supabase.auth.signInWithOtp({ phone: trimmed });
     setSubmitting(false);
     if (error) {
-      toast.error(
+      return fail(
         error.message.toLowerCase().includes("provider")
           ? "SMS provider not configured yet. Use email or Google for now."
           : "Could not send code. Try again.",
       );
-      return;
     }
     setOtpSent(true);
     toast.success("Code sent. Check your SMS.");
   };
 
   const verifyOtp = async () => {
+    setFormError(null);
     const trimmed = phone.trim();
-    if (otp.length < 4) {
-      toast.error("Enter the 6-digit code");
-      return;
-    }
+    if (otp.length < 4) return fail("Enter the 6-digit code.");
     setSubmitting(true);
     const { error } = await supabase.auth.verifyOtp({
       phone: trimmed,
@@ -132,220 +124,292 @@ function LoginPage() {
       type: "sms",
     });
     setSubmitting(false);
-    if (error) {
-      toast.error("Invalid or expired code.");
-      return;
-    }
+    if (error) return fail("Invalid or expired code.");
     toast.success("Signed in");
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-secondary via-background to-secondary/40 flex items-center justify-center py-4 px-2 md:py-10">
-      <div className="relative w-full max-w-[430px] md:max-w-lg min-h-[calc(100vh-2rem)] sm:min-h-[860px] md:min-h-0 bg-background rounded-[2.25rem] md:rounded-3xl sm:border-[10px] md:border-2 border-navy-deep shadow-2xl overflow-hidden flex flex-col">
-        <div className="bg-navy text-white px-6 pt-10 pb-12 relative">
-          <div className="flex items-center gap-3">
-            <div className="bg-white rounded-lg p-1.5">
-              <img src={logoUrl} alt="CUT" className="h-8 w-auto" />
-            </div>
-            <div>
-              <div className="font-display text-2xl tracking-wide leading-none">CUT ATHLETIQ</div>
-              <div className="text-[11px] text-white/60">Sign in to your locker</div>
+    <div className="min-h-screen bg-gradient-to-br from-secondary via-background to-secondary/40">
+      <main className="mx-auto grid min-h-screen w-full max-w-6xl grid-cols-1 lg:grid-cols-[1.05fr_1fr]">
+        {/* Brand panel — desktop only */}
+        <aside className="relative hidden lg:flex flex-col justify-between overflow-hidden bg-navy-deep text-white p-12">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,hsl(var(--gold)/0.18),transparent_60%),radial-gradient(circle_at_100%_100%,hsl(var(--navy)/0.6),transparent_50%)]" />
+          <div className="relative">
+            <div className="flex items-center gap-3">
+              <div className="bg-white rounded-xl p-2">
+                <img src={logoUrl} alt="CUT Athletiq" className="h-9 w-auto" />
+              </div>
+              <div>
+                <div className="font-display text-2xl tracking-wide leading-none">CUT ATHLETIQ</div>
+                <div className="text-xs text-white/60 mt-1">High-performance squad OS</div>
+              </div>
             </div>
           </div>
-        </div>
-
-        <div className="px-6 -mt-6 flex-1 overflow-y-auto pb-8 space-y-3">
-          {/* Social */}
-          <div className="bg-card rounded-2xl shadow-lg p-4 border space-y-2">
-            <button
-              type="button"
-              onClick={() => oauth("google")}
-              disabled={!!oauthBusy}
-              className="w-full bg-white text-navy-deep border-2 border-border font-bold uppercase tracking-wider rounded-full py-2.5 text-xs hover:border-navy transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
-            >
-              {oauthBusy === "google" ? <Loader2 className="h-4 w-4 animate-spin" /> : <GoogleGlyph />}
-              Continue with Google
-            </button>
-            <button
-              type="button"
-              onClick={() => oauth("apple")}
-              disabled={!!oauthBusy}
-              className="w-full bg-black text-white font-bold uppercase tracking-wider rounded-full py-2.5 text-xs hover:bg-navy-deep transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
-            >
-              {oauthBusy === "apple" ? <Loader2 className="h-4 w-4 animate-spin" /> : <AppleGlyph />}
-              Continue with Apple
-            </button>
+          <div className="relative space-y-6">
+            <h1 className="font-display text-4xl xl:text-5xl leading-tight">
+              Welcome back to <span className="text-gold">your locker.</span>
+            </h1>
+            <p className="text-white/70 text-sm max-w-md">
+              Track readiness, log sessions, and stay synced with your coach and physio — built for
+              CUT student-athletes.
+            </p>
+            <ul className="space-y-3 text-sm">
+              <Feature icon={<Activity className="h-4 w-4" />} label="Daily wellness & readiness" />
+              <Feature icon={<Trophy className="h-4 w-4" />} label="Squad fixtures & training plans" />
+              <Feature icon={<ShieldCheck className="h-4 w-4" />} label="POPIA-compliant data sharing" />
+            </ul>
           </div>
-
-          <div className="flex items-center gap-2">
-            <div className="h-px flex-1 bg-border" />
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">or</span>
-            <div className="h-px flex-1 bg-border" />
+          <div className="relative text-[11px] text-white/40">
+            Phase 1 Test Build · Authorised users only
           </div>
+        </aside>
 
-          <div className="bg-card rounded-2xl shadow-lg p-5 border space-y-3">
-            <div className="flex rounded-full bg-secondary p-1 text-[11px] font-bold uppercase tracking-wider">
-              <button
-                type="button"
-                onClick={() => setMode("email")}
-                className={`flex-1 rounded-full py-1.5 flex items-center justify-center gap-1 transition-colors ${mode === "email" ? "bg-navy text-white" : "text-muted-foreground"}`}
-              >
-                <Mail className="h-3 w-3" /> Email
-              </button>
-              <button
-                type="button"
-                onClick={() => setMode("phone")}
-                className={`flex-1 rounded-full py-1.5 flex items-center justify-center gap-1 transition-colors ${mode === "phone" ? "bg-navy text-white" : "text-muted-foreground"}`}
-              >
-                <Phone className="h-3 w-3" /> Phone
-              </button>
-            </div>
+        {/* Form panel */}
+        <section className="flex items-center justify-center p-4 sm:p-6 lg:p-10">
+          <div className="relative w-full max-w-[440px] bg-card text-card-foreground rounded-3xl border border-border shadow-2xl overflow-hidden">
+            {/* Mobile header */}
+            <header className="lg:hidden bg-navy text-white px-6 pt-8 pb-10">
+              <div className="flex items-center gap-3">
+                <div className="bg-white rounded-lg p-1.5">
+                  <img src={logoUrl} alt="CUT Athletiq" className="h-8 w-auto" />
+                </div>
+                <div>
+                  <div className="font-display text-xl tracking-wide leading-none">CUT ATHLETIQ</div>
+                  <div className="text-[11px] text-white/60 mt-1">Sign in to your locker</div>
+                </div>
+              </div>
+            </header>
 
-            {mode === "email" ? (
-              <form onSubmit={submit} className="space-y-3">
-                <div>
-                  <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                    Email
-                  </label>
-                  <Input
-                    type="email"
-                    autoComplete="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@cut.ac.za"
-                    className="mt-1"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                    Password
-                  </label>
-                  <Input
-                    type="password"
-                    autoComplete="current-password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="mt-1"
-                    required
-                    minLength={8}
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="w-full bg-navy text-primary-foreground font-bold uppercase tracking-wider rounded-full py-3 hover:bg-navy-deep transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
-                >
-                  {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-                  Sign in
-                </button>
-                <div className="text-center text-[11px] text-muted-foreground">
-                  <button
-                    type="button"
-                    onClick={() => setShowReset((v) => !v)}
-                    className="hover:text-foreground underline"
-                  >
-                    Forgot password?
-                  </button>
-                  <span className="mx-2">·</span>
-                  <Link to="/signup" className="hover:text-foreground underline font-bold">
-                    Create account
-                  </Link>
-                </div>
-                {showReset && (
-                  <div className="rounded-lg border bg-secondary/40 p-3 mt-2 space-y-2">
-                    <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                      Reset password
-                    </div>
-                    <Input
-                      type="email"
-                      placeholder="email on account"
-                      value={resetEmail}
-                      onChange={(e) => setResetEmail(e.target.value)}
-                    />
-                    <button
-                      type="button"
-                      onClick={sendReset}
-                      className="w-full bg-gold text-navy-deep font-bold uppercase tracking-wider rounded-full py-2 text-xs hover:scale-[1.01] transition-transform"
-                    >
-                      Send reset link
-                    </button>
-                    {import.meta.env.DEV && <DevMockResetBlock email={resetEmail} />}
-                  </div>
-                )}
-              </form>
-            ) : (
-              <div className="space-y-3">
-                <div>
-                  <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                    Mobile number
-                  </label>
-                  <Input
-                    type="tel"
-                    autoComplete="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+27 82 123 4567"
-                    className="mt-1"
-                    disabled={otpSent}
-                  />
-                  <p className="text-[10px] text-muted-foreground mt-1">
-                    Use international format starting with +.
-                  </p>
-                </div>
-                {otpSent && (
-                  <div>
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                      6-digit code
-                    </label>
-                    <Input
-                      inputMode="numeric"
-                      maxLength={6}
-                      value={otp}
-                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-                      className="mt-1 tracking-[0.5em] text-center font-bold"
-                    />
-                  </div>
-                )}
-                <button
-                  type="button"
-                  onClick={otpSent ? verifyOtp : sendOtp}
-                  disabled={submitting}
-                  className="w-full bg-navy text-primary-foreground font-bold uppercase tracking-wider rounded-full py-3 hover:bg-navy-deep transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
-                >
-                  {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-                  {otpSent ? "Verify & sign in" : "Send code"}
-                </button>
-                {otpSent && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setOtpSent(false);
-                      setOtp("");
-                    }}
-                    className="w-full text-[11px] underline text-muted-foreground"
-                  >
-                    Use a different number
-                  </button>
-                )}
-                <p className="text-[10px] text-muted-foreground text-center">
-                  SMS may be unavailable until an SMS provider is configured.
+            <div className="px-6 lg:px-8 pt-6 lg:pt-10 pb-8 -mt-4 lg:mt-0 space-y-5">
+              <div className="hidden lg:block">
+                <h2 className="font-display text-2xl tracking-wide">Sign in</h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Use your CUT email, phone, or a social account.
                 </p>
               </div>
-            )}
+
+              {/* Live error region */}
+              <div
+                role="alert"
+                aria-live="polite"
+                className={
+                  formError
+                    ? "rounded-lg border border-destructive/40 bg-destructive/5 px-3 py-2 text-xs text-destructive"
+                    : "sr-only"
+                }
+              >
+                {formError ?? ""}
+              </div>
+
+              {/* Social */}
+              <div className="space-y-2">
+                <button
+                  type="button"
+                  onClick={() => oauth("google")}
+                  disabled={!!oauthBusy}
+                  className="w-full bg-white text-navy-deep border-2 border-border font-bold uppercase tracking-wider rounded-full py-2.5 text-xs hover:border-navy transition-colors disabled:opacity-60 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy focus-visible:ring-offset-2"
+                >
+                  {oauthBusy === "google" ? <Loader2 className="h-4 w-4 animate-spin" /> : <GoogleGlyph />}
+                  Continue with Google
+                </button>
+                <button
+                  type="button"
+                  onClick={() => oauth("apple")}
+                  disabled={!!oauthBusy}
+                  className="w-full bg-black text-white font-bold uppercase tracking-wider rounded-full py-2.5 text-xs hover:bg-navy-deep transition-colors disabled:opacity-60 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy focus-visible:ring-offset-2"
+                >
+                  {oauthBusy === "apple" ? <Loader2 className="h-4 w-4 animate-spin" /> : <AppleGlyph />}
+                  Continue with Apple
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2" aria-hidden="true">
+                <div className="h-px flex-1 bg-border" />
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">or</span>
+                <div className="h-px flex-1 bg-border" />
+              </div>
+
+              {/* Mode toggle */}
+              <div role="tablist" aria-label="Sign-in method" className="flex rounded-full bg-secondary p-1 text-[11px] font-bold uppercase tracking-wider">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={mode === "email"}
+                  onClick={() => setMode("email")}
+                  className={`flex-1 rounded-full py-1.5 flex items-center justify-center gap-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy ${mode === "email" ? "bg-navy text-white" : "text-muted-foreground"}`}
+                >
+                  <Mail className="h-3 w-3" /> Email
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={mode === "phone"}
+                  onClick={() => setMode("phone")}
+                  className={`flex-1 rounded-full py-1.5 flex items-center justify-center gap-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy ${mode === "phone" ? "bg-navy text-white" : "text-muted-foreground"}`}
+                >
+                  <Phone className="h-3 w-3" /> Phone
+                </button>
+              </div>
+
+              {mode === "email" ? (
+                <form onSubmit={submit} className="space-y-3" noValidate>
+                  <div>
+                    <label htmlFor="login-email" className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                      Email
+                    </label>
+                    <Input
+                      id="login-email"
+                      type="email"
+                      autoComplete="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="you@cut.ac.za"
+                      className="mt-1"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="login-password" className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                      Password
+                    </label>
+                    <Input
+                      id="login-password"
+                      type="password"
+                      autoComplete="current-password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="mt-1"
+                      required
+                      minLength={8}
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="w-full bg-navy text-primary-foreground font-bold uppercase tracking-wider rounded-full py-3 hover:bg-navy-deep transition-colors disabled:opacity-60 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2"
+                  >
+                    {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+                    Sign in
+                  </button>
+                  <div className="text-center text-[11px] text-muted-foreground">
+                    <button
+                      type="button"
+                      onClick={() => setShowReset((v) => !v)}
+                      className="hover:text-foreground underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy rounded"
+                    >
+                      Forgot password?
+                    </button>
+                    <span className="mx-2" aria-hidden="true">·</span>
+                    <Link to="/signup" className="hover:text-foreground underline font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy rounded">
+                      Create account
+                    </Link>
+                  </div>
+                  {showReset && (
+                    <div className="rounded-lg border bg-secondary/40 p-3 mt-2 space-y-2">
+                      <label htmlFor="reset-email" className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                        Reset password
+                      </label>
+                      <Input
+                        id="reset-email"
+                        type="email"
+                        placeholder="email on account"
+                        value={resetEmail}
+                        onChange={(e) => setResetEmail(e.target.value)}
+                      />
+                      <button
+                        type="button"
+                        onClick={sendReset}
+                        className="w-full bg-gold text-navy-deep font-bold uppercase tracking-wider rounded-full py-2 text-xs hover:scale-[1.01] transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy focus-visible:ring-offset-2"
+                      >
+                        Send reset link
+                      </button>
+                      {import.meta.env.DEV && <DevMockResetBlock email={resetEmail} />}
+                    </div>
+                  )}
+                </form>
+              ) : (
+                <div className="space-y-3">
+                  <div>
+                    <label htmlFor="login-phone" className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                      Mobile number
+                    </label>
+                    <Input
+                      id="login-phone"
+                      type="tel"
+                      autoComplete="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="+27 82 123 4567"
+                      className="mt-1"
+                      disabled={otpSent}
+                    />
+                    <p className="text-[10px] text-muted-foreground mt-1">
+                      Use international format starting with +.
+                    </p>
+                  </div>
+                  {otpSent && (
+                    <div>
+                      <label htmlFor="login-otp" className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                        6-digit code
+                      </label>
+                      <Input
+                        id="login-otp"
+                        inputMode="numeric"
+                        maxLength={6}
+                        value={otp}
+                        onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+                        className="mt-1 tracking-[0.5em] text-center font-bold"
+                      />
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={otpSent ? verifyOtp : sendOtp}
+                    disabled={submitting}
+                    className="w-full bg-navy text-primary-foreground font-bold uppercase tracking-wider rounded-full py-3 hover:bg-navy-deep transition-colors disabled:opacity-60 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2"
+                  >
+                    {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+                    {otpSent ? "Verify & sign in" : "Send code"}
+                  </button>
+                  {otpSent && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setOtpSent(false);
+                        setOtp("");
+                      }}
+                      className="w-full text-[11px] underline text-muted-foreground"
+                    >
+                      Use a different number
+                    </button>
+                  )}
+                  <p className="text-[10px] text-muted-foreground text-center">
+                    SMS may be unavailable until an SMS provider is configured.
+                  </p>
+                </div>
+              )}
+
+              <p className="text-center text-[10px] text-muted-foreground pt-2">
+                <Link to="/privacy" className="underline hover:text-foreground">
+                  Privacy
+                </Link>
+              </p>
+            </div>
+
+            <TestModeStamp />
           </div>
-
-          <p className="text-center text-[10px] text-muted-foreground">
-            Phase 1 Test Build — Authorised Users Only ·{" "}
-            <Link to="/privacy" className="underline hover:text-foreground">
-              Privacy
-            </Link>
-          </p>
-        </div>
-
-        <TestModeStamp />
-      </div>
+        </section>
+      </main>
     </div>
+  );
+}
+
+function Feature({ icon, label }: { icon: React.ReactNode; label: string }) {
+  return (
+    <li className="flex items-center gap-3">
+      <span className="grid place-items-center h-7 w-7 rounded-full bg-white/10 text-gold">{icon}</span>
+      <span className="text-white/80">{label}</span>
+    </li>
   );
 }
 
