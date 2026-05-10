@@ -1,7 +1,7 @@
 import * as React from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Copy } from "lucide-react";
+import { Plus, Copy, AlertTriangle } from "lucide-react";
 
 /**
  * Single-use team invite link generator. Used by coach home and admin teams
@@ -20,6 +20,7 @@ export function InviteLinkCard({
   const [token, setToken] = React.useState<string | null>(null);
   const [expiresAt, setExpiresAt] = React.useState<string | null>(null);
   const [busy, setBusy] = React.useState(false);
+  const [mintError, setMintError] = React.useState<string | null>(null);
 
   const loadLatest = React.useCallback(async () => {
     const { data } = await supabase
@@ -46,6 +47,7 @@ export function InviteLinkCard({
 
   const generate = async () => {
     setBusy(true);
+    setMintError(null);
     const newToken =
       typeof crypto !== "undefined" && "randomUUID" in crypto
         ? crypto.randomUUID().replace(/-/g, "")
@@ -57,7 +59,12 @@ export function InviteLinkCard({
       .maybeSingle();
     setBusy(false);
     if (error || !data) {
-      toast.error("Could not create invite link");
+      const msg =
+        error?.code === "42501"
+          ? "You don't have permission to mint invites for this team."
+          : (error?.message ?? "Could not create invite link. Please try again.");
+      setMintError(msg);
+      toast.error(msg);
       return;
     }
     setToken(data.token);
