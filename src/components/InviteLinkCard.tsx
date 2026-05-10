@@ -104,6 +104,15 @@ export function InviteLinkCard({
           <Plus className="h-3 w-3" /> {token ? "New" : "Create"}
         </button>
       </div>
+      {mintError && (
+        <div
+          role="alert"
+          className="mt-2 flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/5 p-2 text-[11px] text-destructive"
+        >
+          <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+          <span>{mintError}</span>
+        </div>
+      )}
       {token && (
         <div className="mt-3 space-y-2">
           <div className="text-[11px] font-mono break-all bg-secondary rounded-lg p-2 border">
