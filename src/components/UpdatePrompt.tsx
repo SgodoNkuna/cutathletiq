@@ -1,11 +1,21 @@
 import * as React from "react";
 import { RefreshCw, X } from "lucide-react";
 
+declare global {
+  interface Window {
+    __UPDATE_POLL_MS?: number;
+  }
+}
+
 /**
  * Lightweight "new version available" banner. Polls /version.json (cached as
- * `no-store` by the Lovable proxy) every 60s; if the value changes from the
- * version captured at first load, prompts the user to refresh. No service
- * worker required — works inside the editor preview iframe too.
+ * `no-store` by the Lovable proxy) and prompts the user to refresh when the
+ * value changes from what it was at first load. No service worker required —
+ * works inside the editor preview iframe and on desktop too. Mounted globally
+ * (root layout) so it appears on every screen, including auth.
+ *
+ * For E2E tests, set `window.__UPDATE_POLL_MS = 200` before navigation to
+ * speed up polling.
  */
 export function UpdatePrompt() {
   const [initial, setInitial] = React.useState<string | null>(null);
@@ -29,10 +39,15 @@ export function UpdatePrompt() {
       if (!cancelled) setInitial(v);
     });
 
+    const interval =
+      typeof window !== "undefined" && typeof window.__UPDATE_POLL_MS === "number"
+        ? window.__UPDATE_POLL_MS
+        : 60_000;
+
     const id = window.setInterval(async () => {
       const v = await fetchVersion();
       if (!cancelled && v) setLatest(v);
-    }, 60_000);
+    }, interval);
 
     return () => {
       cancelled = true;
@@ -47,6 +62,7 @@ export function UpdatePrompt() {
     <div
       role="status"
       aria-live="polite"
+      data-testid="update-prompt"
       className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 max-w-sm w-[calc(100%-2rem)] bg-navy-deep text-white rounded-2xl shadow-2xl border border-gold/40 px-4 py-3 flex items-center gap-3 animate-fade-up"
     >
       <RefreshCw className="h-4 w-4 text-gold shrink-0" />
@@ -55,12 +71,14 @@ export function UpdatePrompt() {
         <div className="text-white/80 mt-0.5">A new version is available — refresh to load it.</div>
       </div>
       <button
+        data-testid="update-prompt-refresh"
         onClick={() => window.location.reload()}
         className="rounded-full bg-gold text-navy-deep px-3 py-1 text-[11px] font-bold uppercase tracking-wider"
       >
         Refresh
       </button>
       <button
+        data-testid="update-prompt-dismiss"
         aria-label="Dismiss update prompt"
         onClick={() => setDismissed(true)}
         className="text-white/60 hover:text-white"
