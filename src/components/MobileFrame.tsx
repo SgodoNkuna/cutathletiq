@@ -19,6 +19,9 @@ import { NotificationBell } from "./NotificationBell";
 import { TestModeStamp } from "./TestModeStamp";
 import { WellnessGate } from "./WellnessGate";
 import { HelpDrawer } from "./HelpDrawer";
+import { UpdatePrompt } from "./UpdatePrompt";
+import { PullToRefresh } from "./PullToRefresh";
+import { useRouter } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 
 type NavItem = { to: string; label: string; icon: React.ComponentType<{ className?: string }> };
@@ -81,8 +84,12 @@ export function MobileFrame({
   const { profile, loading, signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const router = useRouter();
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const isDesktop = useIsDesktop();
+  const handleRefresh = React.useCallback(async () => {
+    await router.invalidate();
+  }, [router]);
 
   // Auth gate — bounce to /login if no profile
   React.useEffect(() => {
