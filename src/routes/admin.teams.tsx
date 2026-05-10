@@ -3,7 +3,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { MobileFrame } from "@/components/MobileFrame";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
-import { ChevronLeft, Loader2, Users, Search } from "lucide-react";
+import { InviteLinkCard } from "@/components/InviteLinkCard";
+import { ChevronLeft, Loader2, Users, Search, Link2 } from "lucide-react";
 
 export const Route = createFileRoute("/admin/teams")({
   head: () => ({
@@ -31,6 +32,7 @@ function AdminTeams() {
   const [rows, setRows] = React.useState<Row[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [q, setQ] = React.useState("");
+  const [openInvite, setOpenInvite] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     if (!profile) return;
@@ -107,20 +109,36 @@ function AdminTeams() {
             {filtered.map((t) => {
               const coach =
                 `${t.coach?.first_name ?? ""} ${t.coach?.last_name ?? ""}`.trim() || "Coach";
+              const open = openInvite === t.id;
               return (
-                <div key={t.id} className="p-3 flex items-center gap-3">
-                  <div className="bg-gold/15 text-gold rounded-lg p-2">
-                    <Users className="h-4 w-4" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-bold truncate">{t.name}</div>
-                    <div className="text-[10px] text-muted-foreground truncate">
-                      {coach} · {t.sport} · {t.member_count ?? 0} members
+                <div key={t.id} className="p-3">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-gold/15 text-gold rounded-lg p-2">
+                      <Users className="h-4 w-4" />
                     </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-bold truncate">{t.name}</div>
+                      <div className="text-[10px] text-muted-foreground truncate">
+                        {coach} · {t.sport} · {t.member_count ?? 0} members
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-bold text-navy uppercase tracking-wider">
+                      {t.join_code}
+                    </span>
+                    <button
+                      onClick={() => setOpenInvite(open ? null : t.id)}
+                      aria-expanded={open}
+                      aria-label={open ? "Hide invite link" : "Create invite link"}
+                      className="ml-1 inline-flex items-center gap-1 rounded-full bg-navy text-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider hover:bg-navy-deep"
+                    >
+                      <Link2 className="h-3 w-3" /> Invite
+                    </button>
                   </div>
-                  <span className="text-[10px] font-bold text-navy uppercase tracking-wider">
-                    {t.join_code}
-                  </span>
+                  {open && profile && (
+                    <div className="mt-3">
+                      <InviteLinkCard teamId={t.id} createdBy={profile.id} />
+                    </div>
+                  )}
                 </div>
               );
             })}

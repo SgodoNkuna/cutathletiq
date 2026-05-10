@@ -19,6 +19,9 @@ import { NotificationBell } from "./NotificationBell";
 import { TestModeStamp } from "./TestModeStamp";
 import { WellnessGate } from "./WellnessGate";
 import { HelpDrawer } from "./HelpDrawer";
+import { UpdatePrompt } from "./UpdatePrompt";
+import { PullToRefresh } from "./PullToRefresh";
+import { useRouter } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 
 type NavItem = { to: string; label: string; icon: React.ComponentType<{ className?: string }> };
@@ -81,8 +84,12 @@ export function MobileFrame({
   const { profile, loading, signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const router = useRouter();
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const isDesktop = useIsDesktop();
+  const handleRefresh = React.useCallback(async () => {
+    await router.invalidate();
+  }, [router]);
 
   // Auth gate — bounce to /login if no profile
   React.useEffect(() => {
@@ -203,6 +210,7 @@ export function MobileFrame({
 
         <TestModeStamp />
         <WellnessGate />
+        <UpdatePrompt />
       </div>
     );
   }
@@ -247,7 +255,8 @@ export function MobileFrame({
           </div>
         )}
 
-        <div ref={scrollRef} className="flex-1 overflow-y-auto overflow-x-hidden scroll-smooth">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto overflow-x-hidden scroll-smooth overscroll-contain">
+          <PullToRefresh scrollRef={scrollRef} onRefresh={handleRefresh} />
           <div className="animate-fade-up">{children}</div>
           <div className="text-center text-[10px] text-muted-foreground py-3">
             Phase 1 Test Build ·{" "}
@@ -288,6 +297,7 @@ export function MobileFrame({
         <TestModeStamp />
       </div>
       <WellnessGate />
+      <UpdatePrompt />
     </div>
   );
 }
