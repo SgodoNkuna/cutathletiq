@@ -210,6 +210,7 @@ export function MobileFrame({
 
         <TestModeStamp />
         <WellnessGate />
+        <UpdatePrompt />
       </div>
     );
   }
@@ -254,7 +255,8 @@ export function MobileFrame({
           </div>
         )}
 
-        <div ref={scrollRef} className="flex-1 overflow-y-auto overflow-x-hidden scroll-smooth">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto overflow-x-hidden scroll-smooth overscroll-contain">
+          <PullToRefresh scrollRef={scrollRef} onRefresh={handleRefresh} />
           <div className="animate-fade-up">{children}</div>
           <div className="text-center text-[10px] text-muted-foreground py-3">
             Phase 1 Test Build ·{" "}
@@ -295,6 +297,7 @@ export function MobileFrame({
         <TestModeStamp />
       </div>
       <WellnessGate />
+      <UpdatePrompt />
     </div>
   );
 }
