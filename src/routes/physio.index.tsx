@@ -1,6 +1,7 @@
 import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { MobileFrame } from "@/components/MobileFrame";
+import { InviteLinkCard } from "@/components/InviteLinkCard";
 import { SectionHeader, SportTag, StatusPill } from "@/components/primitives";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
@@ -134,6 +135,10 @@ function PhysioHome() {
           Cross-team inbox: as a physio you can see and log injuries for every athlete in the
           system, and schedule rehab or meetings on the calendar.
         </div>
+
+        {profile.team_id && (
+          <InviteLinkCard teamId={profile.team_id} createdBy={profile.id} />
+        )}
 
         <SectionHeader
           title="Injury inbox"
