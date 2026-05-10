@@ -4,6 +4,7 @@ import { AuthProvider } from "@/lib/auth-context";
 import { Toaster } from "@/components/ui/sonner";
 import { DevErrorBoundary } from "@/components/DevErrorBoundary";
 import { InstallBanner } from "@/components/InstallBanner";
+import { UpdatePrompt } from "@/components/UpdatePrompt";
 import { checkStartupHealth } from "@/lib/server/startup.functions";
 import { toast } from "sonner";
 
@@ -129,6 +130,7 @@ function RootComponent() {
       <AuthProvider>
         <Outlet />
         <InstallBanner />
+        <UpdatePrompt />
         <Toaster position="top-center" />
       </AuthProvider>
     </DevErrorBoundary>

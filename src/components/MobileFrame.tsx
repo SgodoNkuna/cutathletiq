@@ -19,7 +19,6 @@ import { NotificationBell } from "./NotificationBell";
 import { TestModeStamp } from "./TestModeStamp";
 import { WellnessGate } from "./WellnessGate";
 import { HelpDrawer } from "./HelpDrawer";
-import { UpdatePrompt } from "./UpdatePrompt";
 import { PullToRefresh } from "./PullToRefresh";
 import { useRouter } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
@@ -210,7 +209,6 @@ export function MobileFrame({
 
         <TestModeStamp />
         <WellnessGate />
-        <UpdatePrompt />
       </div>
     );
   }
@@ -297,7 +295,6 @@ export function MobileFrame({
         <TestModeStamp />
       </div>
       <WellnessGate />
-      <UpdatePrompt />
     </div>
   );
 }
