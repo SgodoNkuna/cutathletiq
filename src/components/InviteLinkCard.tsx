@@ -45,6 +45,13 @@ export function InviteLinkCard({
   const [expiresAt, setExpiresAt] = React.useState<string | null>(null);
   const [busy, setBusy] = React.useState(false);
   const [mintError, setMintError] = React.useState<string | null>(null);
+  const errorRef = React.useRef<HTMLDivElement | null>(null);
+
+  // When an error appears, move focus to the alert so screen-reader and
+  // keyboard users land on the message immediately.
+  React.useEffect(() => {
+    if (mintError) errorRef.current?.focus();
+  }, [mintError]);
 
   const loadLatest = React.useCallback(async () => {
     const { data } = await supabase
