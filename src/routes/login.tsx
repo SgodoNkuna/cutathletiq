@@ -89,41 +89,6 @@ function LoginPage() {
     }
   };
 
-  const sendOtp = async () => {
-    setFormError(null);
-    const trimmed = phone.trim();
-    if (!/^\+\d{8,15}$/.test(trimmed)) {
-      return fail("Enter your phone in international format, e.g. +27821234567");
-    }
-    setSubmitting(true);
-    const { error } = await supabase.auth.signInWithOtp({ phone: trimmed });
-    setSubmitting(false);
-    if (error) {
-      return fail(
-        error.message.toLowerCase().includes("provider")
-          ? "SMS provider not configured yet. Use email or Google for now."
-          : "Could not send code. Try again.",
-      );
-    }
-    setOtpSent(true);
-    toast.success("Code sent. Check your SMS.");
-  };
-
-  const verifyOtp = async () => {
-    setFormError(null);
-    const trimmed = phone.trim();
-    if (otp.length < 4) return fail("Enter the 6-digit code.");
-    setSubmitting(true);
-    const { error } = await supabase.auth.verifyOtp({
-      phone: trimmed,
-      token: otp.trim(),
-      type: "sms",
-    });
-    setSubmitting(false);
-    if (error) return fail("Invalid or expired code.");
-    toast.success("Signed in");
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-secondary via-background to-secondary/40">
       <main className="mx-auto grid min-h-screen w-full max-w-6xl grid-cols-1 lg:grid-cols-[1.05fr_1fr]">
