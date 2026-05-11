@@ -190,30 +190,7 @@ function LoginPage() {
                 <div className="h-px flex-1 bg-border" />
               </div>
 
-              {/* Mode toggle */}
-              <div role="tablist" aria-label="Sign-in method" className="flex rounded-full bg-secondary p-1 text-[11px] font-bold uppercase tracking-wider">
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={mode === "email"}
-                  onClick={() => setMode("email")}
-                  className={`flex-1 rounded-full py-1.5 flex items-center justify-center gap-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy ${mode === "email" ? "bg-navy text-white" : "text-muted-foreground"}`}
-                >
-                  <Mail className="h-3 w-3" /> Email
-                </button>
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={mode === "phone"}
-                  onClick={() => setMode("phone")}
-                  className={`flex-1 rounded-full py-1.5 flex items-center justify-center gap-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy ${mode === "phone" ? "bg-navy text-white" : "text-muted-foreground"}`}
-                >
-                  <Phone className="h-3 w-3" /> Phone
-                </button>
-              </div>
-
-              {mode === "email" ? (
-                <form onSubmit={submit} className="space-y-3" noValidate>
+              <form onSubmit={submit} className="space-y-3" noValidate>
                   <div>
                     <label htmlFor="login-email" className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                       Email
