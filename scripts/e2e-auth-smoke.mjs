@@ -52,10 +52,10 @@ ok("cleanup done");
 
 // Sanity-check demo logins still work
 const demos = [
-  ["demo-athlete@cutathletiq.test", "Demo!2026Athlete"],
-  ["demo-coach@cutathletiq.test",   "Demo!2026Coach"],
-  ["demo-physio@cutathletiq.test",  "Demo!2026Physio"],
-  ["demo-admin@cutathletiq.test",   "Demo!2026Admin"],
+  ["demo-athlete@cutathletiq.test", "DemoAthlete!2026"],
+  ["demo-coach@cutathletiq.test",   "DemoCoach!2026"],
+  ["demo-physio@cutathletiq.test",  "DemoPhysio!2026"],
+  ["demo-admin@cutathletiq.test",   "DemoAdmin!2026"],
 ];
 for (const [e, p] of demos) {
   const dc = createClient(url, anon, { auth: { persistSession: false } });
