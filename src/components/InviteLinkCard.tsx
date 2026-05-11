@@ -134,10 +134,15 @@ export function InviteLinkCard({
       </div>
       {mintError && (
         <div
+          ref={errorRef}
           role="alert"
-          className="mt-2 flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/5 p-2 text-[11px] text-destructive"
+          aria-live="assertive"
+          aria-atomic="true"
+          tabIndex={-1}
+          data-testid="invite-mint-error"
+          className="mt-2 flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/5 p-2 text-[11px] text-destructive focus:outline-none focus-visible:ring-2 focus-visible:ring-destructive focus-visible:ring-offset-2"
         >
-          <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+          <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" aria-hidden="true" />
           <span>{mintError}</span>
         </div>
       )}
