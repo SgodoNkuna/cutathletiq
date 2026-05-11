@@ -7,7 +7,7 @@ import { useAuth, ROLE_HOME } from "@/lib/auth-context";
 import { Input } from "@/components/ui/input";
 import { TestModeStamp } from "@/components/TestModeStamp";
 import { toast } from "sonner";
-import { Loader2, FlaskConical, Copy, Mail, Phone, ShieldCheck, Trophy, Activity } from "lucide-react";
+import { Loader2, FlaskConical, Copy, ShieldCheck, Trophy, Activity } from "lucide-react";
 import { devMockResetPassword } from "@/lib/server/dev.functions";
 
 export const Route = createFileRoute("/login")({
