@@ -145,7 +145,7 @@ function LoginPage() {
               <div className="hidden lg:block">
                 <h2 className="font-display text-2xl tracking-wide">Sign in</h2>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Use your CUT email, phone, or a social account.
+                  Use your CUT email or a social account.
                 </p>
               </div>
 
