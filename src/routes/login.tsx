@@ -7,7 +7,7 @@ import { useAuth, ROLE_HOME } from "@/lib/auth-context";
 import { Input } from "@/components/ui/input";
 import { TestModeStamp } from "@/components/TestModeStamp";
 import { toast } from "sonner";
-import { Loader2, FlaskConical, Copy, Mail, Phone, ShieldCheck, Trophy, Activity } from "lucide-react";
+import { Loader2, FlaskConical, Copy, ShieldCheck, Trophy, Activity } from "lucide-react";
 import { devMockResetPassword } from "@/lib/server/dev.functions";
 
 export const Route = createFileRoute("/login")({
@@ -23,12 +23,8 @@ export const Route = createFileRoute("/login")({
 function LoginPage() {
   const { profile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const [mode, setMode] = React.useState<"email" | "phone">("email");
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
-  const [phone, setPhone] = React.useState("");
-  const [otp, setOtp] = React.useState("");
-  const [otpSent, setOtpSent] = React.useState(false);
   const [submitting, setSubmitting] = React.useState(false);
   const [resetEmail, setResetEmail] = React.useState("");
   const [showReset, setShowReset] = React.useState(false);
@@ -93,41 +89,6 @@ function LoginPage() {
     }
   };
 
-  const sendOtp = async () => {
-    setFormError(null);
-    const trimmed = phone.trim();
-    if (!/^\+\d{8,15}$/.test(trimmed)) {
-      return fail("Enter your phone in international format, e.g. +27821234567");
-    }
-    setSubmitting(true);
-    const { error } = await supabase.auth.signInWithOtp({ phone: trimmed });
-    setSubmitting(false);
-    if (error) {
-      return fail(
-        error.message.toLowerCase().includes("provider")
-          ? "SMS provider not configured yet. Use email or Google for now."
-          : "Could not send code. Try again.",
-      );
-    }
-    setOtpSent(true);
-    toast.success("Code sent. Check your SMS.");
-  };
-
-  const verifyOtp = async () => {
-    setFormError(null);
-    const trimmed = phone.trim();
-    if (otp.length < 4) return fail("Enter the 6-digit code.");
-    setSubmitting(true);
-    const { error } = await supabase.auth.verifyOtp({
-      phone: trimmed,
-      token: otp.trim(),
-      type: "sms",
-    });
-    setSubmitting(false);
-    if (error) return fail("Invalid or expired code.");
-    toast.success("Signed in");
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-secondary via-background to-secondary/40">
       <main className="mx-auto grid min-h-screen w-full max-w-6xl grid-cols-1 lg:grid-cols-[1.05fr_1fr]">
@@ -184,7 +145,7 @@ function LoginPage() {
               <div className="hidden lg:block">
                 <h2 className="font-display text-2xl tracking-wide">Sign in</h2>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Use your CUT email, phone, or a social account.
+                  Use your CUT email or a social account.
                 </p>
               </div>
 
@@ -229,30 +190,7 @@ function LoginPage() {
                 <div className="h-px flex-1 bg-border" />
               </div>
 
-              {/* Mode toggle */}
-              <div role="tablist" aria-label="Sign-in method" className="flex rounded-full bg-secondary p-1 text-[11px] font-bold uppercase tracking-wider">
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={mode === "email"}
-                  onClick={() => setMode("email")}
-                  className={`flex-1 rounded-full py-1.5 flex items-center justify-center gap-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy ${mode === "email" ? "bg-navy text-white" : "text-muted-foreground"}`}
-                >
-                  <Mail className="h-3 w-3" /> Email
-                </button>
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={mode === "phone"}
-                  onClick={() => setMode("phone")}
-                  className={`flex-1 rounded-full py-1.5 flex items-center justify-center gap-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy ${mode === "phone" ? "bg-navy text-white" : "text-muted-foreground"}`}
-                >
-                  <Phone className="h-3 w-3" /> Phone
-                </button>
-              </div>
-
-              {mode === "email" ? (
-                <form onSubmit={submit} className="space-y-3" noValidate>
+              <form onSubmit={submit} className="space-y-3" noValidate>
                   <div>
                     <label htmlFor="login-email" className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                       Email
@@ -327,67 +265,6 @@ function LoginPage() {
                     </div>
                   )}
                 </form>
-              ) : (
-                <div className="space-y-3">
-                  <div>
-                    <label htmlFor="login-phone" className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                      Mobile number
-                    </label>
-                    <Input
-                      id="login-phone"
-                      type="tel"
-                      autoComplete="tel"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="+27 82 123 4567"
-                      className="mt-1"
-                      disabled={otpSent}
-                    />
-                    <p className="text-[10px] text-muted-foreground mt-1">
-                      Use international format starting with +.
-                    </p>
-                  </div>
-                  {otpSent && (
-                    <div>
-                      <label htmlFor="login-otp" className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                        6-digit code
-                      </label>
-                      <Input
-                        id="login-otp"
-                        inputMode="numeric"
-                        maxLength={6}
-                        value={otp}
-                        onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-                        className="mt-1 tracking-[0.5em] text-center font-bold"
-                      />
-                    </div>
-                  )}
-                  <button
-                    type="button"
-                    onClick={otpSent ? verifyOtp : sendOtp}
-                    disabled={submitting}
-                    className="w-full bg-navy text-primary-foreground font-bold uppercase tracking-wider rounded-full py-3 hover:bg-navy-deep transition-colors disabled:opacity-60 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2"
-                  >
-                    {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-                    {otpSent ? "Verify & sign in" : "Send code"}
-                  </button>
-                  {otpSent && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setOtpSent(false);
-                        setOtp("");
-                      }}
-                      className="w-full text-[11px] underline text-muted-foreground"
-                    >
-                      Use a different number
-                    </button>
-                  )}
-                  <p className="text-[10px] text-muted-foreground text-center">
-                    SMS may be unavailable until an SMS provider is configured.
-                  </p>
-                </div>
-              )}
 
               <p className="text-center text-[10px] text-muted-foreground pt-2">
                 <Link to="/privacy" className="underline hover:text-foreground">

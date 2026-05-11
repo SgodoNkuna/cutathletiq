@@ -4,6 +4,30 @@ import { toast } from "sonner";
 import { Plus, Copy, AlertTriangle } from "lucide-react";
 
 /**
+ * Map a Postgres / PostgREST error from a `team_invites` insert to a
+ * user-friendly message. Any RLS rejection (code 42501, or a message
+ * mentioning row-level security / permission / denied) collapses to the
+ * same actionable line so coaches/physios/admins always see the same
+ * "you don't have permission" copy regardless of which RLS policy fired.
+ */
+export function mapInviteMintError(err: { code?: string; message?: string } | null): string {
+  if (!err) return "Could not create invite link. Please try again.";
+  const code = err.code ?? "";
+  const msg = (err.message ?? "").toLowerCase();
+  const isRls =
+    code === "42501" ||
+    /row-level security|permission denied|not authorized|forbidden/.test(msg);
+  if (isRls) return "You don't have permission to mint invites for this team.";
+  if (code === "23505" || msg.includes("duplicate")) {
+    return "An invite with that token already exists. Try again.";
+  }
+  if (msg.includes("network") || msg.includes("fetch")) {
+    return "Network error — check your connection and try again.";
+  }
+  return err.message ?? "Could not create invite link. Please try again.";
+}
+
+/**
  * Single-use team invite link generator. Used by coach home and admin teams
  * page. Mints a row in `team_invites` and renders a copyable /signup?invite=…
  * URL. Expires after 7 days (DB default).
@@ -21,6 +45,13 @@ export function InviteLinkCard({
   const [expiresAt, setExpiresAt] = React.useState<string | null>(null);
   const [busy, setBusy] = React.useState(false);
   const [mintError, setMintError] = React.useState<string | null>(null);
+  const errorRef = React.useRef<HTMLDivElement | null>(null);
+
+  // When an error appears, move focus to the alert so screen-reader and
+  // keyboard users land on the message immediately.
+  React.useEffect(() => {
+    if (mintError) errorRef.current?.focus();
+  }, [mintError]);
 
   const loadLatest = React.useCallback(async () => {
     const { data } = await supabase
@@ -59,10 +90,7 @@ export function InviteLinkCard({
       .maybeSingle();
     setBusy(false);
     if (error || !data) {
-      const msg =
-        error?.code === "42501"
-          ? "You don't have permission to mint invites for this team."
-          : (error?.message ?? "Could not create invite link. Please try again.");
+      const msg = mapInviteMintError(error);
       setMintError(msg);
       toast.error(msg);
       return;
@@ -106,10 +134,15 @@ export function InviteLinkCard({
       </div>
       {mintError && (
         <div
+          ref={errorRef}
           role="alert"
-          className="mt-2 flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/5 p-2 text-[11px] text-destructive"
+          aria-live="assertive"
+          aria-atomic="true"
+          tabIndex={-1}
+          data-testid="invite-mint-error"
+          className="mt-2 flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/5 p-2 text-[11px] text-destructive focus:outline-none focus-visible:ring-2 focus-visible:ring-destructive focus-visible:ring-offset-2"
         >
-          <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+          <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" aria-hidden="true" />
           <span>{mintError}</span>
         </div>
       )}
