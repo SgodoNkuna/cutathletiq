@@ -4,6 +4,30 @@ import { toast } from "sonner";
 import { Plus, Copy, AlertTriangle } from "lucide-react";
 
 /**
+ * Map a Postgres / PostgREST error from a `team_invites` insert to a
+ * user-friendly message. Any RLS rejection (code 42501, or a message
+ * mentioning row-level security / permission / denied) collapses to the
+ * same actionable line so coaches/physios/admins always see the same
+ * "you don't have permission" copy regardless of which RLS policy fired.
+ */
+export function mapInviteMintError(err: { code?: string; message?: string } | null): string {
+  if (!err) return "Could not create invite link. Please try again.";
+  const code = err.code ?? "";
+  const msg = (err.message ?? "").toLowerCase();
+  const isRls =
+    code === "42501" ||
+    /row-level security|permission denied|not authorized|forbidden/.test(msg);
+  if (isRls) return "You don't have permission to mint invites for this team.";
+  if (code === "23505" || msg.includes("duplicate")) {
+    return "An invite with that token already exists. Try again.";
+  }
+  if (msg.includes("network") || msg.includes("fetch")) {
+    return "Network error — check your connection and try again.";
+  }
+  return err.message ?? "Could not create invite link. Please try again.";
+}
+
+/**
  * Single-use team invite link generator. Used by coach home and admin teams
  * page. Mints a row in `team_invites` and renders a copyable /signup?invite=…
  * URL. Expires after 7 days (DB default).
