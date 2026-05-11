@@ -99,10 +99,6 @@ export function InviteLinkCard({
     setExpiresAt(data.expires_at);
     toast.success("Invite link ready — copy & share");
   };
-    setToken(data.token);
-    setExpiresAt(data.expires_at);
-    toast.success("Invite link ready — copy & share");
-  };
 
   const link = token ? `${window.location.origin}/signup?invite=${token}` : "";
 
