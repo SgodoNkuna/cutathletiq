@@ -90,14 +90,15 @@ export function InviteLinkCard({
       .maybeSingle();
     setBusy(false);
     if (error || !data) {
-      const msg =
-        error?.code === "42501"
-          ? "You don't have permission to mint invites for this team."
-          : (error?.message ?? "Could not create invite link. Please try again.");
+      const msg = mapInviteMintError(error);
       setMintError(msg);
       toast.error(msg);
       return;
     }
+    setToken(data.token);
+    setExpiresAt(data.expires_at);
+    toast.success("Invite link ready — copy & share");
+  };
     setToken(data.token);
     setExpiresAt(data.expires_at);
     toast.success("Invite link ready — copy & share");
