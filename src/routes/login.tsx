@@ -265,67 +265,6 @@ function LoginPage() {
                     </div>
                   )}
                 </form>
-              ) : (
-                <div className="space-y-3">
-                  <div>
-                    <label htmlFor="login-phone" className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                      Mobile number
-                    </label>
-                    <Input
-                      id="login-phone"
-                      type="tel"
-                      autoComplete="tel"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="+27 82 123 4567"
-                      className="mt-1"
-                      disabled={otpSent}
-                    />
-                    <p className="text-[10px] text-muted-foreground mt-1">
-                      Use international format starting with +.
-                    </p>
-                  </div>
-                  {otpSent && (
-                    <div>
-                      <label htmlFor="login-otp" className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                        6-digit code
-                      </label>
-                      <Input
-                        id="login-otp"
-                        inputMode="numeric"
-                        maxLength={6}
-                        value={otp}
-                        onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-                        className="mt-1 tracking-[0.5em] text-center font-bold"
-                      />
-                    </div>
-                  )}
-                  <button
-                    type="button"
-                    onClick={otpSent ? verifyOtp : sendOtp}
-                    disabled={submitting}
-                    className="w-full bg-navy text-primary-foreground font-bold uppercase tracking-wider rounded-full py-3 hover:bg-navy-deep transition-colors disabled:opacity-60 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2"
-                  >
-                    {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-                    {otpSent ? "Verify & sign in" : "Send code"}
-                  </button>
-                  {otpSent && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setOtpSent(false);
-                        setOtp("");
-                      }}
-                      className="w-full text-[11px] underline text-muted-foreground"
-                    >
-                      Use a different number
-                    </button>
-                  )}
-                  <p className="text-[10px] text-muted-foreground text-center">
-                    SMS may be unavailable until an SMS provider is configured.
-                  </p>
-                </div>
-              )}
 
               <p className="text-center text-[10px] text-muted-foreground pt-2">
                 <Link to="/privacy" className="underline hover:text-foreground">
