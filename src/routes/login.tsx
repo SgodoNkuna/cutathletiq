@@ -23,12 +23,8 @@ export const Route = createFileRoute("/login")({
 function LoginPage() {
   const { profile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const [mode, setMode] = React.useState<"email" | "phone">("email");
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
-  const [phone, setPhone] = React.useState("");
-  const [otp, setOtp] = React.useState("");
-  const [otpSent, setOtpSent] = React.useState(false);
   const [submitting, setSubmitting] = React.useState(false);
   const [resetEmail, setResetEmail] = React.useState("");
   const [showReset, setShowReset] = React.useState(false);
