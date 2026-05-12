@@ -15,8 +15,13 @@ export default defineConfig({
   use: {
     baseURL: process.env.BASE_URL ?? "http://localhost:8080",
     headless: true,
-    trace: "off",
+    // Capture trace + screenshot on first retry / failure so the
+    // invite-banner and auth-layout suites are fast to debug in CI.
+    trace: "retain-on-failure",
+    screenshot: "only-on-failure",
+    video: "retain-on-failure",
   },
+  retries: process.env.CI ? 1 : 0,
   projects: [
     {
       name: "chromium",
