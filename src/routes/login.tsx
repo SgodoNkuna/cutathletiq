@@ -47,18 +47,32 @@ function LoginPage() {
     setFormError(null);
     if (!email.trim() || !password) return fail("Enter your email and password.");
     setSubmitting(true);
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email: email.trim(),
       password,
     });
-    setSubmitting(false);
     if (error) {
+      setSubmitting(false);
       const msg = error.message.toLowerCase();
       if (msg.includes("invalid")) return fail("Wrong email or password.");
       if (msg.includes("not confirmed")) return fail("Please verify your email first.");
       return fail("Could not sign in. Please try again.");
     }
-    toast.success("Signed in");
+    // Fast-path: don't wait for the auth-context listener round-trip — fetch
+    // the profile directly and navigate immediately so users land on their
+    // home in one render.
+    if (data.user) {
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("role, onboarding_complete")
+        .eq("id", data.user.id)
+        .maybeSingle();
+      toast.success("Signed in");
+      if (!prof) return navigate({ to: "/onboarding" });
+      if (!prof.onboarding_complete) return navigate({ to: "/onboarding" });
+      return navigate({ to: ROLE_HOME[prof.role] });
+    }
+    setSubmitting(false);
   };
 
   const sendReset = async () => {
