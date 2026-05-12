@@ -127,6 +127,8 @@ function SystemStatusPage() {
           </ul>
         </section>
 
+        <E2ESuitePanel />
+
         <div className="mt-6 text-xs text-muted-foreground text-center">
           Last checked {new Date(data.serverTime).toLocaleString()} ·{" "}
           <Link to="/security" className="underline">Security notes</Link> ·{" "}
@@ -134,5 +136,47 @@ function SystemStatusPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Admin-facing inventory of the Playwright E2E suites that live in /scripts.
+// Read-only — gives admins one place to see which login / invite / onboarding
+// flows are covered and how to run them.
+const E2E_SUITES: Array<{ file: string; area: string; covers: string }> = [
+  { file: "scripts/auth-redirect.spec.ts",       area: "Login",        covers: "New-user → /onboarding; demo athlete → /athlete under 2s" },
+  { file: "scripts/auth-timing.spec.ts",         area: "Login",        covers: "Repeated random-account sign-in stays under 2s (screenshots)" },
+  { file: "scripts/auth-layout.spec.ts",         area: "Login/Signup", covers: "Desktop 1280×800 layout stable, brand aside visible, no reflow" },
+  { file: "scripts/onboarding-redirect.spec.ts", area: "Onboarding",   covers: "Welcome heading + Continue CTA render after first login" },
+  { file: "scripts/invite-banner.spec.ts",       area: "Invites",      covers: "Banner role=status: not-found / expired / used" },
+  { file: "scripts/invite-banner-a11y.spec.ts",  area: "Invites",      covers: "Banner aria-live + keyboard reachability" },
+  { file: "scripts/invite-invalid.spec.ts",      area: "Invites",      covers: "Garbage / zero / non-uuid tokens → not-found banner" },
+  { file: "scripts/no-phone-auth.spec.ts",       area: "Auth UI",      covers: "Asserts no phone/SMS/OTP inputs render on login or signup" },
+  { file: "scripts/update-prompt.spec.ts",       area: "PWA",          covers: "Update banner appears + dismisses on version.json change" },
+];
+
+function E2ESuitePanel() {
+  return (
+    <section className="bg-card border rounded-2xl p-5 mt-4" aria-labelledby="e2e-suite-heading">
+      <h2 id="e2e-suite-heading" className="font-bold text-sm uppercase tracking-wider text-muted-foreground mb-1">
+        E2E test suite (admin)
+      </h2>
+      <p className="text-[11px] text-muted-foreground mb-3">
+        Run all from the project root: <code className="font-mono bg-secondary/40 px-1 rounded">bunx playwright test</code>.
+        Trace + screenshots are retained on failure.
+      </p>
+      <ul className="divide-y">
+        {E2E_SUITES.map((s) => (
+          <li key={s.file} className="py-2 flex items-start justify-between gap-3 text-sm">
+            <div className="min-w-0">
+              <div className="font-mono text-[11px] truncate">{s.file}</div>
+              <div className="text-xs text-muted-foreground">{s.covers}</div>
+            </div>
+            <span className="shrink-0 text-[10px] uppercase font-bold tracking-wider text-navy bg-navy/10 rounded-full px-2 py-0.5">
+              {s.area}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
