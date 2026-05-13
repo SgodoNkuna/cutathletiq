@@ -1,6 +1,7 @@
 import * as React from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { checkStartupHealth } from "@/lib/server/startup.functions";
+import { useAuth } from "@/lib/auth-context";
 import { AlertTriangle, RefreshCw, KeyRound, ShieldAlert, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/system-status")({
@@ -11,24 +12,53 @@ export const Route = createFileRoute("/system-status")({
       { name: "robots", content: "noindex" },
     ],
   }),
-  loader: () => checkStartupHealth(),
   component: SystemStatusPage,
 });
 
+type StartupHealth = Awaited<ReturnType<typeof checkStartupHealth>>;
+
 function SystemStatusPage() {
-  const data = Route.useLoaderData();
+  const { profile, loading } = useAuth();
   const navigate = useNavigate();
+  const [data, setData] = React.useState<StartupHealth | null>(null);
   const [refreshing, setRefreshing] = React.useState(false);
 
+  React.useEffect(() => {
+    if (profile?.role === "admin") void checkStartupHealth().then(setData);
+  }, [profile]);
+
   const refresh = async () => {
+    if (profile?.role !== "admin") return;
     setRefreshing(true);
     try {
-      await checkStartupHealth();
+      setData(await checkStartupHealth());
     } finally {
       setRefreshing(false);
-      navigate({ to: "/system-status", reloadDocument: true });
     }
   };
+
+  if (loading) {
+    return <SystemStatusShell><Loader2 className="h-6 w-6 animate-spin text-navy" /></SystemStatusShell>;
+  }
+
+  if (!profile || profile.role !== "admin") {
+    return (
+      <SystemStatusShell>
+        <div role="alert" className="max-w-md rounded-2xl border border-destructive/40 bg-card p-6 text-center shadow-lg">
+          <ShieldAlert className="mx-auto mb-3 h-8 w-8 text-destructive" />
+          <h1 className="font-display text-3xl text-navy">Access denied</h1>
+          <p className="mt-2 text-sm text-muted-foreground">Only admins can view system status.</p>
+          <button onClick={() => navigate({ to: "/" })} className="mt-5 rounded-full bg-navy px-4 py-2 text-xs font-bold uppercase tracking-wider text-primary-foreground">
+            Go home
+          </button>
+        </div>
+      </SystemStatusShell>
+    );
+  }
+
+  if (!data) {
+    return <SystemStatusShell><Loader2 className="h-6 w-6 animate-spin text-navy" /></SystemStatusShell>;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-secondary via-background to-secondary/40 px-4 py-10">
@@ -137,6 +167,10 @@ function SystemStatusPage() {
       </div>
     </div>
   );
+}
+
+function SystemStatusShell({ children }: { children: React.ReactNode }) {
+  return <div className="min-h-screen bg-gradient-to-br from-secondary via-background to-secondary/40 px-4 py-10 flex items-center justify-center">{children}</div>;
 }
 
 // Admin-facing inventory of the Playwright E2E suites that live in /scripts.

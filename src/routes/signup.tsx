@@ -200,8 +200,9 @@ function SignupPage() {
 
             {inviteInfo && (
               <div
-                role="status"
-                aria-live="polite"
+                role={inviteInfo.error ? "alert" : "status"}
+                aria-live={inviteInfo.error ? "assertive" : "polite"}
+                aria-atomic="true"
                 className={cn(
                   "mx-5 lg:mx-8 mt-4 rounded-xl border p-3 text-xs",
                   inviteInfo.error

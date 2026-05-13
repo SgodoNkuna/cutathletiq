@@ -14,7 +14,7 @@ for (const token of [
 ]) {
   test(`invalid invite token "${token}" → not-found banner`, async ({ page }) => {
     await page.goto(`/signup?invite=${encodeURIComponent(token)}`);
-    const banner = page.getByRole("status").filter({ hasText: /invite link not found/i });
+    const banner = page.getByRole("alert").filter({ hasText: /invite link not found/i });
     await expect(banner).toBeVisible({ timeout: 5000 });
   });
 }

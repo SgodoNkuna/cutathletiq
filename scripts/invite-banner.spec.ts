@@ -1,5 +1,5 @@
 // Playwright: verifies the signup invite banner renders the correct inline
-// role="alert" / role="status" message for not-found, expired, and used
+// role="alert" message for not-found, expired, and used
 // tokens. Mints real tokens via Supabase service role so the lookup RPC the
 // page calls returns the expected `expired` / `used` flags.
 //
@@ -37,7 +37,7 @@ test.use({ viewport: { width: 1280, height: 800 } });
 
 test("invite banner — not found", async ({ page }) => {
   await page.goto(`/signup?invite=${crypto.randomUUID()}`);
-  const banner = page.getByRole("status").filter({ hasText: /invite link not found/i });
+  const banner = page.getByRole("alert").filter({ hasText: /invite link not found/i });
   await expect(banner).toBeVisible({ timeout: 5000 });
 });
 
@@ -46,7 +46,7 @@ test("invite banner — expired", async ({ page }) => {
   const token = await mint(team.id, coachId, { expiresInMs: -86400_000 });
   try {
     await page.goto(`/signup?invite=${token}`);
-    const banner = page.getByRole("status").filter({ hasText: /invite has expired/i });
+    const banner = page.getByRole("alert").filter({ hasText: /invite has expired/i });
     await expect(banner).toBeVisible({ timeout: 5000 });
     await expect(banner).toContainText(team.name);
   } finally {
@@ -59,7 +59,7 @@ test("invite banner — already used", async ({ page }) => {
   const token = await mint(team.id, coachId, { used: true });
   try {
     await page.goto(`/signup?invite=${token}`);
-    const banner = page.getByRole("status").filter({ hasText: /already been used/i });
+    const banner = page.getByRole("alert").filter({ hasText: /already been used/i });
     await expect(banner).toBeVisible({ timeout: 5000 });
     await expect(banner).toContainText(team.name);
   } finally {

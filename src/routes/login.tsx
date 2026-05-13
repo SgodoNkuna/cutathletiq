@@ -3,7 +3,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import logoUrl from "@/assets/cut-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
-import { useAuth, ROLE_HOME } from "@/lib/auth-context";
+import { ensureUserProfile, useAuth, ROLE_HOME } from "@/lib/auth-context";
 import { Input } from "@/components/ui/input";
 import { TestModeStamp } from "@/components/TestModeStamp";
 import { toast } from "sonner";
@@ -62,11 +62,7 @@ function LoginPage() {
     // the profile directly and navigate immediately so users land on their
     // home in one render.
     if (data.user) {
-      const { data: prof } = await supabase
-        .from("profiles")
-        .select("role, onboarding_complete")
-        .eq("id", data.user.id)
-        .maybeSingle();
+      const prof = await ensureUserProfile(data.user);
       toast.success("Signed in");
       if (!prof) return navigate({ to: "/onboarding" });
       if (!prof.onboarding_complete) return navigate({ to: "/onboarding" });
