@@ -6,6 +6,55 @@ import type { Database } from "@/integrations/supabase/types";
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 export type Role = Database["public"]["Enums"]["app_role"];
 
+const APP_ROLES: Role[] = ["athlete", "coach", "physio", "admin"];
+
+function stringMeta(value: unknown): string {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function profileSeedFromUser(user: User) {
+  const meta = user.user_metadata ?? {};
+  const fullName = stringMeta(meta.full_name) || stringMeta(meta.name);
+  const [fallbackFirst = "", ...fallbackLast] = fullName.split(/\s+/).filter(Boolean);
+  const roleMeta = stringMeta(meta.role) as Role;
+  return {
+    id: user.id,
+    email: user.email ?? `${user.id}@missing-email.local`,
+    first_name: stringMeta(meta.first_name) || fallbackFirst,
+    last_name: stringMeta(meta.last_name) || fallbackLast.join(" "),
+    role: APP_ROLES.includes(roleMeta) ? roleMeta : "athlete",
+    sport: stringMeta(meta.sport) || null,
+    position: stringMeta(meta.position) || null,
+    consent_coach_training: meta.consent_coach_training === true,
+    consent_physio_health: meta.consent_physio_health === true,
+    consent_at:
+      meta.consent_coach_training === true || meta.consent_physio_health === true
+        ? new Date().toISOString()
+        : null,
+  };
+}
+
+export async function ensureUserProfile(user: User): Promise<Profile | null> {
+  const { data: existing, error: readError } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .maybeSingle();
+  if (existing) return existing;
+  if (readError) console.warn("Could not read profile; attempting repair", readError);
+
+  const { data: inserted, error: insertError } = await supabase
+    .from("profiles")
+    .insert(profileSeedFromUser(user))
+    .select("*")
+    .maybeSingle();
+  if (insertError) {
+    console.error("Could not repair missing profile", insertError);
+    return null;
+  }
+  return inserted ?? null;
+}
+
 type AuthContextValue = {
   session: Session | null;
   user: User | null;
@@ -22,8 +71,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = React.useState<Profile | null>(null);
   const [loading, setLoading] = React.useState(true);
 
-  const loadProfile = React.useCallback(async (userId: string) => {
-    const { data } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
+  const loadProfile = React.useCallback(async (user: User) => {
+    const data = await ensureUserProfile(user);
     setProfile(data ?? null);
   }, []);
 
@@ -34,7 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (newSession?.user) {
         // Defer to avoid deadlock with Supabase auth callback
         setTimeout(() => {
-          void loadProfile(newSession.user.id);
+          void loadProfile(newSession.user);
         }, 0);
       } else {
         setProfile(null);
@@ -44,7 +93,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     void supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
       if (data.session?.user) {
-        void loadProfile(data.session.user.id).finally(() => setLoading(false));
+        void loadProfile(data.session.user).finally(() => setLoading(false));
       } else {
         setLoading(false);
       }
@@ -63,7 +112,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const refreshProfile = React.useCallback(async () => {
-    if (session?.user) await loadProfile(session.user.id);
+    if (session?.user) await loadProfile(session.user);
   }, [session, loadProfile]);
 
   const value: AuthContextValue = {
