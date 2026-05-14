@@ -178,7 +178,8 @@ function SystemStatusShell({ children }: { children: React.ReactNode }) {
 // flows are covered and how to run them.
 const E2E_SUITES: Array<{ file: string; area: string; covers: string }> = [
   { file: "scripts/auth-redirect.spec.ts",          area: "Login",        covers: "New-user → /onboarding; demo athlete → /athlete under 2s" },
-  { file: "scripts/auth-profile-backfill.spec.ts",  area: "Login",        covers: "Auth user without profiles row is backfilled on sign-in" },
+  { file: "scripts/auth-profile-backfill.spec.ts",  area: "Login",        covers: "Auth user without profiles row is backfilled on sign-in (asserts exact /onboarding then /athlete URLs)" },
+  { file: "scripts/auth-no-spinner.spec.ts",        area: "Login",        covers: "Sign-in → /athlete <2s with no full-screen spinner / 'Loading…' state" },
   { file: "scripts/auth-timing.spec.ts",         area: "Login",        covers: "Repeated random-account sign-in stays under 2s (screenshots)" },
   { file: "scripts/auth-layout.spec.ts",         area: "Login/Signup", covers: "Desktop 1280×800 layout stable, brand aside visible, no reflow" },
   { file: "scripts/onboarding-redirect.spec.ts", area: "Onboarding",   covers: "Welcome heading + Continue CTA render after first login" },
