@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /system-status
+Disallow: /dev/
+Disallow: /onboarding
+Disallow: /reset-password
+
+Sitemap: https://cutathletiq.lovable.app/sitemap.xml
