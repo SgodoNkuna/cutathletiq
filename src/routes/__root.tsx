@@ -30,39 +30,41 @@ function NotFoundComponent() {
   );
 }
 
+const SITE_NAME = "CUT Athletiq";
+const SITE_URL = "https://cutathletiq.lovable.app";
+const SITE_DESC = "Sport-performance platform connecting CUT athletes, coaches and physios — training plans, wellness check-ins, injury tracking and game-day readiness in one place.";
+const SITE_SUMMARY = "CUT Athletiq is the Central University of Technology's sport-performance app. Athletes log wellness, coaches publish programmes, physios track injuries and return-to-play.";
+const OG_IMAGE = "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/ee4341dd-fa6b-4f20-9971-52437bbae277";
+
 export const Route = createRootRoute({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { title: "CUT Athletiq" },
-      {
-        name: "description",
-        content:
-          "Sport-performance app for athletes, coaches and physios at the Central University of Technology.",
-      },
+      { title: SITE_NAME },
+      { name: "description", content: SITE_DESC },
       { name: "author", content: "CUT Sports Department" },
-      { property: "og:title", content: "CUT Athletiq" },
-      {
-        property: "og:description",
-        content: "Sport-performance app for athletes, coaches and physios at CUT.",
-      },
+      // AI summary metadata for LLM crawlers / answer engines.
+      { name: "ai-summary", content: SITE_SUMMARY },
+      { name: "summary", content: SITE_SUMMARY },
+      // Open Graph
+      { property: "og:site_name", content: SITE_NAME },
+      { property: "og:title", content: SITE_NAME },
+      { property: "og:description", content: SITE_DESC },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-      { name: "twitter:title", content: "CUT Athletiq" },
-      {
-        name: "twitter:description",
-        content: "Sport-performance app for athletes, coaches and physios at CUT.",
-      },
-      { name: "description", content: "A sports team management app for coaches, athletes, and physios." },
-      { property: "og:description", content: "A sports team management app for coaches, athletes, and physios." },
-      { name: "twitter:description", content: "A sports team management app for coaches, athletes, and physios." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/ee4341dd-fa6b-4f20-9971-52437bbae277" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/ee4341dd-fa6b-4f20-9971-52437bbae277" },
+      { property: "og:url", content: SITE_URL },
+      { property: "og:image", content: OG_IMAGE },
+      { property: "og:image:alt", content: "CUT Athletiq — sport-performance platform" },
+      // Twitter
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: SITE_NAME },
+      { name: "twitter:description", content: SITE_DESC },
+      { name: "twitter:image", content: OG_IMAGE },
+      // PWA / theme
       { name: "theme-color", content: "#003478" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
-      { name: "apple-mobile-web-app-title", content: "CUT Athletiq" },
+      { name: "apple-mobile-web-app-title", content: SITE_NAME },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -75,6 +77,33 @@ export const Route = createRootRoute({
       {
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&display=swap",
+      },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: SITE_NAME,
+          url: SITE_URL,
+          logo: `${SITE_URL}/icon-512.png`,
+          description: SITE_DESC,
+          parentOrganization: {
+            "@type": "CollegeOrUniversity",
+            name: "Central University of Technology",
+          },
+        }),
+      },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: SITE_NAME,
+          url: SITE_URL,
+          description: SITE_DESC,
+        }),
       },
     ],
   }),

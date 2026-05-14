@@ -7,11 +7,14 @@ export const Route = createFileRoute("/privacy")({
   head: () => ({
     meta: [
       { title: "Privacy Notice — CUT Athletiq" },
-      {
-        name: "description",
-        content: "How CUT Athletiq collects and protects your data under POPIA.",
-      },
+      { name: "description", content: "How CUT Athletiq collects, stores and protects your training, wellness and health data under POPIA." },
+      { property: "og:title", content: "Privacy Notice — CUT Athletiq" },
+      { property: "og:description", content: "How CUT Athletiq protects your training, wellness and health data under POPIA." },
+      { property: "og:url", content: "https://cutathletiq.lovable.app/privacy" },
+      { name: "twitter:title", content: "Privacy Notice — CUT Athletiq" },
+      { name: "twitter:description", content: "How CUT Athletiq protects your training, wellness and health data under POPIA." },
     ],
+    links: [{ rel: "canonical", href: "https://cutathletiq.lovable.app/privacy" }],
   }),
   component: PrivacyPage,
 });
