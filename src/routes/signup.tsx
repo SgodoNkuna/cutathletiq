@@ -17,9 +17,15 @@ export const Route = createFileRoute("/signup")({
   }),
   head: () => ({
     meta: [
-      { title: "Create account — CUT Athletiq" },
-      { name: "description", content: "Sign up as an athlete, coach, physio, or admin." },
+      { title: "Create your CUT Athletiq account" },
+      { name: "description", content: "Sign up as an athlete, coach, physio or admin and join your team's training, wellness and injury workspace." },
+      { property: "og:title", content: "Create your CUT Athletiq account" },
+      { property: "og:description", content: "Sign up as an athlete, coach, physio or admin and join your team's workspace." },
+      { property: "og:url", content: "https://cutathletiq.lovable.app/signup" },
+      { name: "twitter:title", content: "Create your CUT Athletiq account" },
+      { name: "twitter:description", content: "Sign up as an athlete, coach, physio or admin and join your team's workspace." },
     ],
+    links: [{ rel: "canonical", href: "https://cutathletiq.lovable.app/signup" }],
   }),
   component: SignupPage,
 });

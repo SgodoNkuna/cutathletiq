@@ -9,8 +9,26 @@ export const Route = createFileRoute("/help")({
   head: () => ({
     meta: [
       { title: "Help & FAQ — CUT Athletiq" },
-      { name: "description", content: "Guides, FAQs, and contact info for athletes, coaches, physios and admins." },
+      { name: "description", content: "Guides, FAQs and contact info for athletes, coaches, physios and admins using CUT Athletiq." },
+      { property: "og:title", content: "Help & FAQ — CUT Athletiq" },
+      { property: "og:description", content: "Guides, FAQs and contact info for everyone on the CUT Athletiq platform." },
+      { property: "og:url", content: "https://cutathletiq.lovable.app/help" },
+      { name: "twitter:title", content: "Help & FAQ — CUT Athletiq" },
+      { name: "twitter:description", content: "Guides, FAQs and contact info for everyone on the CUT Athletiq platform." },
     ],
+    links: [{ rel: "canonical", href: "https://cutathletiq.lovable.app/help" }],
+    scripts: [{
+      type: "application/ld+json",
+      children: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: [
+          { "@type": "Question", name: "How do I reset my password?", acceptedAnswer: { "@type": "Answer", text: "Go to Login → Reset password and follow the email link." } },
+          { "@type": "Question", name: "How do I join a team?", acceptedAnswer: { "@type": "Answer", text: "Use the team join code from your coach on the Join Team screen, or follow an invite link." } },
+          { "@type": "Question", name: "Who can see my wellness and injury data?", acceptedAnswer: { "@type": "Answer", text: "Only your coach (training data) and physio (health data), based on the consents you grant. Admins see aggregated stats." } },
+        ],
+      }),
+    }],
   }),
   component: HelpPage,
 });
