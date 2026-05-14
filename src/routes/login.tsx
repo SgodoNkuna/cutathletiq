@@ -10,12 +10,22 @@ import { toast } from "sonner";
 import { Loader2, FlaskConical, Copy, ShieldCheck, Trophy, Activity } from "lucide-react";
 import { devMockResetPassword } from "@/lib/server/dev.functions";
 
+const LOGIN_TITLE = "Sign in — CUT Athletiq";
+const LOGIN_DESC = "Sign in to your CUT Athletiq locker to access your training plan, wellness check-ins and team updates.";
+const LOGIN_URL = "https://cutathletiq.lovable.app/login";
+
 export const Route = createFileRoute("/login")({
   head: () => ({
     meta: [
-      { title: "Sign in — CUT Athletiq" },
-      { name: "description", content: "Sign in to your CUT Athletiq locker." },
+      { title: LOGIN_TITLE },
+      { name: "description", content: LOGIN_DESC },
+      { property: "og:title", content: LOGIN_TITLE },
+      { property: "og:description", content: LOGIN_DESC },
+      { property: "og:url", content: LOGIN_URL },
+      { name: "twitter:title", content: LOGIN_TITLE },
+      { name: "twitter:description", content: LOGIN_DESC },
     ],
+    links: [{ rel: "canonical", href: LOGIN_URL }],
   }),
   component: LoginPage,
 });
