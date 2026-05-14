@@ -4,16 +4,22 @@ import logoUrl from "@/assets/cut-logo.png";
 import { TestModeStamp } from "@/components/TestModeStamp";
 import { useAuth, ROLE_HOME } from "@/lib/auth-context";
 
+const HOME_TITLE = "CUT Athletiq — sport-performance for CUT athletes, coaches & physios";
+const HOME_DESC = "One app for the Central University of Technology sports community: log wellness, follow training programmes, track injuries and prep for game day.";
+const HOME_URL = "https://cutathletiq.lovable.app/";
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "CUT Athletiq" },
-      {
-        name: "description",
-        content:
-          "Phase 1 test build — sport-performance app for CUT athletes, coaches and physios.",
-      },
+      { title: HOME_TITLE },
+      { name: "description", content: HOME_DESC },
+      { property: "og:title", content: HOME_TITLE },
+      { property: "og:description", content: HOME_DESC },
+      { property: "og:url", content: HOME_URL },
+      { name: "twitter:title", content: HOME_TITLE },
+      { name: "twitter:description", content: HOME_DESC },
     ],
+    links: [{ rel: "canonical", href: HOME_URL }],
   }),
   component: SplashPage,
 });
