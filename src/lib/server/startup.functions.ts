@@ -32,7 +32,17 @@ const logStartupHealthRequest = createMiddleware({ type: "function" }).server(as
     hasAuthorizationHeader: authHeader.length > 0,
     authorizationScheme: authHeader ? authHeader.split(/\s+/, 1)[0] : null,
   });
-  return next();
+  try {
+    return await next();
+  } catch (error) {
+    console.warn("[startup-health]", {
+      event: "thrown_response",
+      checkedAt: new Date().toISOString(),
+      hasAuthorizationHeader: authHeader.length > 0,
+      thrownStatus: thrownStatus(error),
+    });
+    throw error;
+  }
 });
 
 /**
