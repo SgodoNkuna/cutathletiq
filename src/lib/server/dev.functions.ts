@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { assertAdmin } from "./require-admin";
 
 /**
  * Dev mode is enabled when DEV_MODE=true is set as a runtime secret.
@@ -28,11 +29,13 @@ const MockResetInput = z.object({
  * the browser triggers the standard PASSWORD_RECOVERY flow.
  */
 export const devMockResetPassword = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => MockResetInput.parse(input))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     if (!devEnabled()) {
       return { ok: false as const, error: "Dev mode is disabled in this environment." };
     }
+    await assertAdmin(context.userId);
     const { data: link, error } = await supabaseAdmin.auth.admin.generateLink({
       type: "recovery",
       email: data.email,
@@ -116,10 +119,13 @@ type CheckResult = {
   detail?: string;
 };
 
-export const runRlsDiagnostic = createServerFn({ method: "POST" }).handler(async () => {
+export const runRlsDiagnostic = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
   if (!devEnabled()) {
     return { ok: false as const, error: "Dev mode is disabled." };
   }
+  await assertAdmin(context.userId);
 
   const url = process.env.SUPABASE_URL!;
   const anon = process.env.SUPABASE_PUBLISHABLE_KEY!;
