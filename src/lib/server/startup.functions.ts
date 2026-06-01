@@ -18,7 +18,10 @@ function maskCode(code: string | null | undefined): string {
  * (admin via env, coach/physio via DB). Codes are returned masked so the
  * status page never leaks the secret.
  */
-export const checkStartupHealth = createServerFn({ method: "GET" }).handler(async () => {
+export const checkStartupHealth = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.userId);
   const missingEnv = REQUIRED_ENV.filter((k) => {
     const v = process.env[k];
     return !v || v.trim() === "";
