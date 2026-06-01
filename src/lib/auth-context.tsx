@@ -79,14 +79,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   React.useEffect(() => {
     // Set up listener FIRST, then check existing session.
     const { data: sub } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      setLoading(true);
       setSession(newSession);
       if (newSession?.user) {
+        setProfile(null);
         // Defer to avoid deadlock with Supabase auth callback
         setTimeout(() => {
-          void loadProfile(newSession.user);
+          void loadProfile(newSession.user).finally(() => setLoading(false));
         }, 0);
       } else {
         setProfile(null);
+        setLoading(false);
       }
     });
 
