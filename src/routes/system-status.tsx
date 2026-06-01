@@ -24,15 +24,15 @@ function SystemStatusPage() {
   const [refreshing, setRefreshing] = React.useState(false);
 
   React.useEffect(() => {
-    if (profile?.role === "admin") {
+    if (!loading && profile?.role === "admin") {
       checkStartupHealth()
         .then(setData)
         .catch((e) => console.error("[system-status] health check failed", e));
     }
-  }, [profile]);
+  }, [profile, loading]);
 
   const refresh = async () => {
-    if (profile?.role !== "admin") return;
+    if (loading || profile?.role !== "admin") return;
     setRefreshing(true);
     try {
       setData(await checkStartupHealth());
