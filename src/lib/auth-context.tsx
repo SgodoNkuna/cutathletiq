@@ -79,21 +79,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   React.useEffect(() => {
     // Set up listener FIRST, then check existing session.
     const { data: sub } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      setLoading(true);
       setSession(newSession);
       if (newSession?.user) {
+        setProfile(null);
         // Defer to avoid deadlock with Supabase auth callback
         setTimeout(() => {
-          void loadProfile(newSession.user);
+          void loadProfile(newSession.user)
+            .catch((error) => {
+              console.error("Could not load authenticated profile", error);
+              setProfile(null);
+            })
+            .finally(() => setLoading(false));
         }, 0);
       } else {
         setProfile(null);
+        setLoading(false);
       }
     });
 
     void supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
       if (data.session?.user) {
-        void loadProfile(data.session.user).finally(() => setLoading(false));
+        void loadProfile(data.session.user)
+          .catch((error) => {
+            console.error("Could not load existing profile", error);
+            setProfile(null);
+          })
+          .finally(() => setLoading(false));
       } else {
         setLoading(false);
       }

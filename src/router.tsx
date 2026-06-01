@@ -1,8 +1,13 @@
 import { createRouter, useRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
+import { RuntimeErrorFallback } from "./components/RuntimeErrorFallback";
 
 function DefaultErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
+
+  if (error.message === "[object Response]" || /_serverFn|server function/i.test(error.stack ?? "")) {
+    return <RuntimeErrorFallback error={error} reset={reset} />;
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
