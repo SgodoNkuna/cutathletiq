@@ -29,11 +29,13 @@ const MockResetInput = z.object({
  * the browser triggers the standard PASSWORD_RECOVERY flow.
  */
 export const devMockResetPassword = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => MockResetInput.parse(input))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     if (!devEnabled()) {
       return { ok: false as const, error: "Dev mode is disabled in this environment." };
     }
+    await assertAdmin(context.userId);
     const { data: link, error } = await supabaseAdmin.auth.admin.generateLink({
       type: "recovery",
       email: data.email,
