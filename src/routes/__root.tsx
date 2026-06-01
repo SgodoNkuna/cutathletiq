@@ -5,8 +5,6 @@ import { Toaster } from "@/components/ui/sonner";
 import { DevErrorBoundary } from "@/components/DevErrorBoundary";
 import { InstallBanner } from "@/components/InstallBanner";
 import { UpdatePrompt } from "@/components/UpdatePrompt";
-import { checkStartupHealth } from "@/lib/server/startup.functions";
-import { toast } from "sonner";
 
 import appCss from "../styles.css?url";
 
