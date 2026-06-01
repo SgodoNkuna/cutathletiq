@@ -5,8 +5,6 @@ import { Toaster } from "@/components/ui/sonner";
 import { DevErrorBoundary } from "@/components/DevErrorBoundary";
 import { InstallBanner } from "@/components/InstallBanner";
 import { UpdatePrompt } from "@/components/UpdatePrompt";
-import { checkStartupHealth } from "@/lib/server/startup.functions";
-import { toast } from "sonner";
 
 import appCss from "../styles.css?url";
 
@@ -127,32 +125,11 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
-  // One-shot startup health check. Surfaces a clear toast if a required
-  // server-side secret (e.g. ADMIN_INVITE_CODE) is missing so the operator
-  // notices immediately. Detailed view lives at /system-status.
-  React.useEffect(() => {
-    let cancelled = false;
-    void checkStartupHealth()
-      .then((res) => {
-        if (cancelled || res.ok) return;
-        const issues = [...res.missing, ...res.missingCodes.map((r) => `${r}_invite_code`)];
-        console.error(`[startup] Missing required configuration: ${issues.join(", ")}`);
-        toast.error(`Missing config: ${issues.join(", ")}`, {
-          duration: 12_000,
-          description: "Open /system-status for details.",
-          action: {
-            label: "Details",
-            onClick: () => {
-              window.location.href = "/system-status";
-            },
-          },
-        });
-      })
-      .catch((e) => console.warn("[startup] health check failed", e));
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  // Startup health check is admin-gated and surfaced on /system-status and
+  // /admin/invites. Do not call it from the root — it would 403 for every
+  // unauthenticated visitor and crash SSR/initial render.
+
+
 
   return (
     <DevErrorBoundary>
