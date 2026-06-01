@@ -24,7 +24,11 @@ function SystemStatusPage() {
   const [refreshing, setRefreshing] = React.useState(false);
 
   React.useEffect(() => {
-    if (profile?.role === "admin") void checkStartupHealth().then(setData);
+    if (profile?.role === "admin") {
+      checkStartupHealth()
+        .then(setData)
+        .catch((e) => console.error("[system-status] health check failed", e));
+    }
   }, [profile]);
 
   const refresh = async () => {
@@ -32,10 +36,13 @@ function SystemStatusPage() {
     setRefreshing(true);
     try {
       setData(await checkStartupHealth());
+    } catch (e) {
+      console.error("[system-status] refresh failed", e);
     } finally {
       setRefreshing(false);
     }
   };
+
 
   if (loading) {
     return <SystemStatusShell><Loader2 className="h-6 w-6 animate-spin text-navy" /></SystemStatusShell>;
