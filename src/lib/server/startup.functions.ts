@@ -1,4 +1,5 @@
-import { createServerFn } from "@tanstack/react-start";
+import { createMiddleware, createServerFn } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { assertAdmin } from "./require-admin";
@@ -12,6 +13,28 @@ function maskCode(code: string | null | undefined): string {
   return `${c.slice(0, 2)}${"•".repeat(Math.max(c.length - 4, 2))}${c.slice(-2)}`;
 }
 
+function logStartupHealth(event: string, details: Record<string, unknown>) {
+  console.info("[startup-health]", {
+    event,
+    checkedAt: new Date().toISOString(),
+    ...details,
+  });
+}
+
+function thrownStatus(error: unknown): number | null {
+  return error instanceof Response ? error.status : null;
+}
+
+const logStartupHealthRequest = createMiddleware({ type: "function" }).server(async ({ next }) => {
+  const request = getRequest();
+  const authHeader = request?.headers.get("authorization") ?? "";
+  logStartupHealth("request", {
+    hasAuthorizationHeader: authHeader.length > 0,
+    authorizationScheme: authHeader ? authHeader.split(/\s+/, 1)[0] : null,
+  });
+  return next();
+});
+
 /**
  * Server-side startup health check. Verifies that all required environment
  * configuration is present AND reports which invite-code roles are configured
@@ -19,13 +42,29 @@ function maskCode(code: string | null | undefined): string {
  * status page never leaks the secret.
  */
 export const checkStartupHealth = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([logStartupHealthRequest, requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context.userId);
-  const missingEnv = REQUIRED_ENV.filter((k) => {
-    const v = process.env[k];
-    return !v || v.trim() === "";
-  });
+    logStartupHealth("authenticated", {
+      userId: context.userId,
+      subject: (context.claims as Record<string, unknown>)?.sub ?? null,
+    });
+
+    try {
+      await assertAdmin(context.userId);
+    } catch (error) {
+      console.warn("[startup-health]", {
+        event: "admin_check_failed",
+        checkedAt: new Date().toISOString(),
+        userId: context.userId,
+        thrownStatus: thrownStatus(error),
+      });
+      throw error;
+    }
+
+    const missingEnv = REQUIRED_ENV.filter((k) => {
+      const v = process.env[k];
+      return !v || v.trim() === "";
+    });
 
   const adminCode = (process.env.ADMIN_INVITE_CODE ?? "").trim();
   const inviteCodes: { role: string; configured: boolean; masked: string; source: string }[] = [
@@ -69,12 +108,19 @@ export const checkStartupHealth = createServerFn({ method: "GET" })
     );
   }
 
-  return {
-    ok,
-    missing: missingEnv,
-    missingCodes,
-    inviteCodes,
-    checked: REQUIRED_ENV as readonly string[],
-    serverTime: new Date().toISOString(),
-  };
+    logStartupHealth("completed", {
+      userId: context.userId,
+      ok,
+      missingEnvCount: missingEnv.length,
+      missingCodes,
+    });
+
+    return {
+      ok,
+      missing: missingEnv,
+      missingCodes,
+      inviteCodes,
+      checked: REQUIRED_ENV as readonly string[],
+      serverTime: new Date().toISOString(),
+    };
 });
