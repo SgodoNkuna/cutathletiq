@@ -63,8 +63,8 @@ function AdminInvites() {
   }, []);
 
   React.useEffect(() => {
-    if (profile?.role === "admin") void load();
-  }, [profile, load]);
+    if (!loading && profile?.role === "admin") void load();
+  }, [profile, loading, load]);
 
   const mask = (code: string) => {
     const c = code.trim();

@@ -85,7 +85,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setProfile(null);
         // Defer to avoid deadlock with Supabase auth callback
         setTimeout(() => {
-          void loadProfile(newSession.user).finally(() => setLoading(false));
+          void loadProfile(newSession.user)
+            .catch((error) => {
+              console.error("Could not load authenticated profile", error);
+              setProfile(null);
+            })
+            .finally(() => setLoading(false));
         }, 0);
       } else {
         setProfile(null);
@@ -96,7 +101,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     void supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
       if (data.session?.user) {
-        void loadProfile(data.session.user).finally(() => setLoading(false));
+        void loadProfile(data.session.user)
+          .catch((error) => {
+            console.error("Could not load existing profile", error);
+            setProfile(null);
+          })
+          .finally(() => setLoading(false));
       } else {
         setLoading(false);
       }
