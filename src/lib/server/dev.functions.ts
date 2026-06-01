@@ -119,10 +119,13 @@ type CheckResult = {
   detail?: string;
 };
 
-export const runRlsDiagnostic = createServerFn({ method: "POST" }).handler(async () => {
+export const runRlsDiagnostic = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
   if (!devEnabled()) {
     return { ok: false as const, error: "Dev mode is disabled." };
   }
+  await assertAdmin(context.userId);
 
   const url = process.env.SUPABASE_URL!;
   const anon = process.env.SUPABASE_PUBLISHABLE_KEY!;
