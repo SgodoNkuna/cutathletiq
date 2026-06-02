@@ -498,21 +498,25 @@ function RtpWidget({ athletes }: { athletes: Member[] }) {
 function InviteLinkCard({ teamId, coachId }: { teamId: string; coachId: string }) {
   const [token, setToken] = React.useState<string | null>(null);
   const [expiresAt, setExpiresAt] = React.useState<string | null>(null);
+  const [maxUses, setMaxUses] = React.useState<number>(1);
+  const [useCount, setUseCount] = React.useState<number>(0);
+  const [seats, setSeats] = React.useState<number>(10);
   const [busy, setBusy] = React.useState(false);
 
   const loadLatest = React.useCallback(async () => {
     const { data } = await supabase
       .from("team_invites")
-      .select("token, expires_at, used_at")
+      .select("token, expires_at, used_at, max_uses, use_count")
       .eq("team_id", teamId)
-      .is("used_at", null)
       .gt("expires_at", new Date().toISOString())
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
-    if (data) {
+    if (data && data.use_count < data.max_uses) {
       setToken(data.token);
       setExpiresAt(data.expires_at);
+      setMaxUses(data.max_uses);
+      setUseCount(data.use_count);
     }
   }, [teamId]);
 
@@ -520,16 +524,17 @@ function InviteLinkCard({ teamId, coachId }: { teamId: string; coachId: string }
     void loadLatest();
   }, [loadLatest]);
 
-  const generate = async () => {
+  const generate = async (uses: number) => {
     setBusy(true);
+    const clamped = Math.max(1, Math.min(500, Math.round(uses)));
     const newToken =
       typeof crypto !== "undefined" && "randomUUID" in crypto
         ? crypto.randomUUID().replace(/-/g, "")
         : Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
     const { data, error } = await supabase
       .from("team_invites")
-      .insert({ team_id: teamId, token: newToken, created_by: coachId })
-      .select("token, expires_at")
+      .insert({ team_id: teamId, token: newToken, created_by: coachId, max_uses: clamped })
+      .select("token, expires_at, max_uses, use_count")
       .maybeSingle();
     setBusy(false);
     if (error || !data) {
@@ -538,10 +543,18 @@ function InviteLinkCard({ teamId, coachId }: { teamId: string; coachId: string }
     }
     setToken(data.token);
     setExpiresAt(data.expires_at);
-    toast.success("Invite link ready — copy & share");
+    setMaxUses(data.max_uses);
+    setUseCount(data.use_count);
+    toast.success(
+      clamped > 1
+        ? `Group invite ready (${clamped} seats) — copy & share`
+        : "Invite link ready — copy & share",
+    );
   };
 
   const link = token ? `${window.location.origin}/signup?invite=${token}` : "";
+  const remaining = Math.max(maxUses - useCount, 0);
+  const isGroup = maxUses > 1;
 
   const copy = async () => {
     if (!link) return;
@@ -558,21 +571,50 @@ function InviteLinkCard({ teamId, coachId }: { teamId: string; coachId: string }
       <div className="flex items-center justify-between gap-2">
         <div>
           <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-            Single-use invite link
+            {isGroup ? "Group sign-up link" : "Single-use invite link"}
           </div>
           <div className="text-[11px] text-muted-foreground mt-0.5">
-            Each link works once and expires after 7 days.
+            {isGroup
+              ? `Share one link with the whole squad — ${remaining}/${maxUses} seat${maxUses === 1 ? "" : "s"} left. Expires in 7 days.`
+              : "Each link works once and expires after 7 days."}
           </div>
         </div>
+      </div>
+
+      <div className="mt-3 flex flex-wrap items-center gap-2">
         <button
           type="button"
-          onClick={generate}
+          onClick={() => generate(1)}
           disabled={busy}
           className="inline-flex items-center gap-1 rounded-full bg-navy text-white px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider hover:bg-navy-deep disabled:opacity-60"
         >
-          <Plus className="h-3 w-3" /> {token ? "New" : "Create"}
+          <Plus className="h-3 w-3" /> Single-use
         </button>
+        <div className="inline-flex items-center gap-1 rounded-full bg-secondary border px-2 py-1">
+          <label htmlFor="invite-seats" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            Seats
+          </label>
+          <input
+            id="invite-seats"
+            type="number"
+            min={2}
+            max={500}
+            value={seats}
+            onChange={(e) => setSeats(Number(e.target.value) || 2)}
+            className="w-14 bg-transparent text-[11px] font-mono text-center focus:outline-none"
+          />
+          <button
+            type="button"
+            onClick={() => generate(Math.max(2, seats))}
+            disabled={busy}
+            aria-label="Create group invite link"
+            className="inline-flex items-center gap-1 rounded-full bg-gold text-navy-deep px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider disabled:opacity-60"
+          >
+            <Users className="h-3 w-3" /> Group link
+          </button>
+        </div>
       </div>
+
       {token && (
         <div className="mt-3 space-y-2">
           <div className="text-[11px] font-mono break-all bg-secondary rounded-lg p-2 border">
@@ -580,7 +622,8 @@ function InviteLinkCard({ teamId, coachId }: { teamId: string; coachId: string }
           </div>
           <div className="flex items-center justify-between">
             <div className="text-[10px] text-muted-foreground">
-              Expires {expiresAt ? new Date(expiresAt).toLocaleDateString() : "—"}
+              {isGroup ? `${remaining}/${maxUses} seats · ` : ""}Expires{" "}
+              {expiresAt ? new Date(expiresAt).toLocaleDateString() : "—"}
             </div>
             <button
               type="button"
