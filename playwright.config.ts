@@ -25,7 +25,15 @@ export default defineConfig({
   projects: [
     {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      use: {
+        ...devices["Desktop Chrome"],
+        // In the Lovable sandbox, Playwright's bundled chromium can't load
+        // system libs (libglib, libnss, ...). Set CHROMIUM_PATH to a binary
+        // that has its deps already wired up — e.g. `nix-shell -p chromium`.
+        launchOptions: process.env.CHROMIUM_PATH
+          ? { executablePath: process.env.CHROMIUM_PATH }
+          : undefined,
+      },
     },
   ],
 });
