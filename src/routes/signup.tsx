@@ -233,7 +233,9 @@ function SignupPage() {
                       {inviteInfo.teamSport ? ` · ${inviteInfo.teamSport}` : ""}
                     </div>
                     <div className="text-[11px] mt-0.5 opacity-80">
-                      Finish signing up and you'll be added automatically.
+                      {inviteInfo.maxUses && inviteInfo.maxUses > 1
+                        ? `Group link · ${inviteInfo.seatsRemaining}/${inviteInfo.maxUses} seats left. Finish signing up and you'll be added automatically.`
+                        : "Finish signing up and you'll be added automatically."}
                     </div>
                   </>
                 )}
