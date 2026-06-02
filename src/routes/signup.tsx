@@ -48,6 +48,8 @@ function SignupPage() {
   const [inviteInfo, setInviteInfo] = React.useState<{
     teamName: string;
     teamSport: string;
+    seatsRemaining?: number;
+    maxUses?: number;
     error?: string;
   } | null>(null);
 
@@ -60,24 +62,27 @@ function SignupPage() {
         team_sport: string;
         used: boolean;
         expired: boolean;
+        max_uses: number;
+        seats_remaining: number;
       }> | null)?.[0];
       if (error || !row) {
         setInviteInfo({ teamName: "", teamSport: "", error: "Invite link not found." });
         return;
       }
       if (row.used) {
-        setInviteInfo({ teamName: row.team_name, teamSport: row.team_sport, error: "This invite has already been used." });
+        setInviteInfo({ teamName: row.team_name, teamSport: row.team_sport, error: row.max_uses > 1 ? "This group invite is full. Ask your coach for a new one." : "This invite has already been used." });
         return;
       }
       if (row.expired) {
         setInviteInfo({ teamName: row.team_name, teamSport: row.team_sport, error: "This invite has expired. Ask your coach for a new one." });
         return;
       }
-      setInviteInfo({ teamName: row.team_name, teamSport: row.team_sport });
+      setInviteInfo({ teamName: row.team_name, teamSport: row.team_sport, seatsRemaining: row.seats_remaining, maxUses: row.max_uses });
       setRole("athlete");
       if (row.team_sport) setSport(row.team_sport);
     })();
   }, [inviteToken]);
+
 
   const fail = (m: string) => {
     setFormError(m);
@@ -228,7 +233,9 @@ function SignupPage() {
                       {inviteInfo.teamSport ? ` · ${inviteInfo.teamSport}` : ""}
                     </div>
                     <div className="text-[11px] mt-0.5 opacity-80">
-                      Finish signing up and you'll be added automatically.
+                      {inviteInfo.maxUses && inviteInfo.maxUses > 1
+                        ? `Group link · ${inviteInfo.seatsRemaining}/${inviteInfo.maxUses} seats left. Finish signing up and you'll be added automatically.`
+                        : "Finish signing up and you'll be added automatically."}
                     </div>
                   </>
                 )}

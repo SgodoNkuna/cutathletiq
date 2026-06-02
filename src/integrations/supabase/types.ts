@@ -937,9 +937,11 @@ export type Database = {
           created_by: string
           expires_at: string
           id: string
+          max_uses: number
           note: string | null
           team_id: string
           token: string
+          use_count: number
           used_at: string | null
           used_by: string | null
         }
@@ -948,9 +950,11 @@ export type Database = {
           created_by: string
           expires_at?: string
           id?: string
+          max_uses?: number
           note?: string | null
           team_id: string
           token: string
+          use_count?: number
           used_at?: string | null
           used_by?: string | null
         }
@@ -959,9 +963,11 @@ export type Database = {
           created_by?: string
           expires_at?: string
           id?: string
+          max_uses?: number
           note?: string | null
           team_id?: string
           token?: string
+          use_count?: number
           used_at?: string | null
           used_by?: string | null
         }
@@ -1286,9 +1292,12 @@ export type Database = {
           expired: boolean
           expires_at: string
           invite_id: string
+          max_uses: number
+          seats_remaining: number
           team_id: string
           team_name: string
           team_sport: string
+          use_count: number
           used: boolean
         }[]
       }
