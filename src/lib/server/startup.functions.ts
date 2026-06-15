@@ -1,6 +1,6 @@
 import { createMiddleware, createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { assertAdmin } from "./require-admin";
 
@@ -89,6 +89,7 @@ export const checkStartupHealth = createServerFn({ method: "GET" })
   // Read coach/physio codes from DB (admin client bypasses RLS — safe here
   // because we only return masked output).
   try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data } = await supabaseAdmin
       .from("invite_codes")
       .select("role, code")
