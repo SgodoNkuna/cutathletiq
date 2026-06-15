@@ -5,7 +5,7 @@ import {
   devMockResetPassword,
   roleDataSnapshot,
   runRlsDiagnostic,
-} from "@/lib/server/dev.functions";
+} from "@/lib/fns/dev.functions";
 import { useAuth } from "@/lib/auth-context";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";

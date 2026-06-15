@@ -2,7 +2,7 @@ import * as React from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import logoUrl from "@/assets/cut-logo.png";
 import { Input } from "@/components/ui/input";
-import { signupUser } from "@/lib/server/auth.functions";
+import { signupUser } from "@/lib/fns/auth.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { TestModeStamp } from "@/components/TestModeStamp";
 import { ROLES, SPORTS } from "@/data/mock";

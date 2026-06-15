@@ -2,7 +2,7 @@ import { createMiddleware, createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { assertAdmin } from "./require-admin";
+import { assertAdmin } from "./require-admin.server";
 
 const REQUIRED_ENV = ["ADMIN_INVITE_CODE", "SUPABASE_SERVICE_ROLE_KEY", "SUPABASE_URL"] as const;
 

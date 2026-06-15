@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { assertAdmin } from "./require-admin";
+import { assertAdmin } from "./require-admin.server";
 
 /**
  * Admin-only debug: verify ADMIN_INVITE_CODE is being read by the backend
