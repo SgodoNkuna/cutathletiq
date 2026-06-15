@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth, ROLE_LABEL } from "@/lib/auth-context";
 import { MobileFrame } from "@/components/MobileFrame";
 import { Input } from "@/components/ui/input";
-import { exportMyData, deleteMyAccount } from "@/lib/server/popia.functions";
+import { exportMyData, deleteMyAccount } from "@/lib/fns/popia.functions";
 import { toast } from "sonner";
 import { Download, FileText, Loader2, LogOut, ShieldCheck, Trash2 } from "lucide-react";
 import { PWAStatusCard } from "@/components/PWAStatusCard";

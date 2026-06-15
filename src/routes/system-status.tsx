@@ -1,6 +1,6 @@
 import * as React from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { checkStartupHealth } from "@/lib/server/startup.functions";
+import { checkStartupHealth } from "@/lib/fns/startup.functions";
 import { useAuth } from "@/lib/auth-context";
 import { AlertTriangle, RefreshCw, KeyRound, ShieldAlert, Loader2 } from "lucide-react";
 

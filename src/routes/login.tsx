@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { TestModeStamp } from "@/components/TestModeStamp";
 import { toast } from "sonner";
 import { Loader2, FlaskConical, Copy, ShieldCheck, Trophy, Activity } from "lucide-react";
-import { devMockResetPassword } from "@/lib/server/dev.functions";
+import { devMockResetPassword } from "@/lib/fns/dev.functions";
 
 const LOGIN_TITLE = "Sign in — CUT Athletiq";
 const LOGIN_DESC = "Sign in to your CUT Athletiq locker to access your training plan, wellness check-ins and team updates.";
