@@ -184,6 +184,11 @@ export function useCoachProgramme(coachId: string | null, teamId: string | null)
         | "instructions"
         | "manual_finish"
         | "duration_seconds"
+        | "order_index"
+        | "group_id"
+        | "group_label"
+        | "group_color"
+        | "rest_seconds"
       >
     >,
   ) => {
