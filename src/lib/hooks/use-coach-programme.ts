@@ -102,10 +102,11 @@ export function useCoachProgramme(coachId: string | null, teamId: string | null)
   const addSession = async (date: string, name: string) => {
     if (!programme) return;
     setSaving(true);
+    const nextDayIndex = programme.sessions.length;
     const { data, error } = await supabase
       .from("sessions")
-      .insert({ programme_id: programme.id, session_date: date, name })
-      .select("id, name, session_date, notes, programme_id")
+      .insert({ programme_id: programme.id, session_date: date, name, day_index: nextDayIndex })
+      .select("id, name, session_date, notes, programme_id, is_rest_day, day_index")
       .single();
     setSaving(false);
     if (error || !data) {
@@ -128,7 +129,7 @@ export function useCoachProgramme(coachId: string | null, teamId: string | null)
 
   const updateSession = async (
     sessionId: string,
-    patch: Partial<Pick<DBSession, "name" | "session_date">>,
+    patch: Partial<Pick<DBSession, "name" | "session_date" | "is_rest_day" | "day_index">>,
   ) => {
     setProgramme((p) =>
       p
@@ -150,7 +151,7 @@ export function useCoachProgramme(coachId: string | null, teamId: string | null)
       .from("exercises")
       .insert({ session_id: sessionId, name: "New exercise", sets: 3, reps: 8, order_index: order })
       .select(
-        "id, name, sets, reps, weight_kg, order_index, notes, session_id, instructions, manual_finish, duration_seconds",
+        "id, name, sets, reps, weight_kg, order_index, notes, session_id, instructions, manual_finish, duration_seconds, group_id, group_label, group_color, rest_seconds",
       )
       .single();
     if (error || !data) {
