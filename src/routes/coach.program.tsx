@@ -687,13 +687,13 @@ function KindToggle({
 }) {
   const next: Record<ExerciseKind, ExerciseKind> = {
     strength: "running",
-    running: "timed",
-    timed: "strength",
+    running: "time",
+    time: "strength",
   };
   const label: Record<ExerciseKind, string> = {
     strength: "Lift",
     running: "Run",
-    timed: "Hold",
+    time: "Hold",
   };
   return (
     <button
