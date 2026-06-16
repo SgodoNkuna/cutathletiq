@@ -57,7 +57,7 @@ export function useCoachProgramme(coachId: string | null, teamId: string | null)
     const { data: programmes, error } = await supabase
       .from("programmes")
       .select(
-        "id, name, sport, team_id, coach_id, start_date, end_date, sessions(id, name, session_date, notes, programme_id, exercises(id, name, sets, reps, weight_kg, order_index, notes, session_id, instructions, manual_finish, duration_seconds))",
+        "id, name, sport, team_id, coach_id, start_date, end_date, sessions(id, name, session_date, notes, programme_id, is_rest_day, day_index, exercises(id, name, sets, reps, weight_kg, order_index, notes, session_id, instructions, manual_finish, duration_seconds, group_id, group_label, group_color, rest_seconds))",
       )
       .eq("coach_id", coachId)
       .order("created_at", { ascending: false })
