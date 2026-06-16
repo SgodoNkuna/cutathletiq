@@ -199,6 +199,9 @@ export type Database = {
         Row: {
           created_at: string
           duration_seconds: number | null
+          group_color: string | null
+          group_id: string | null
+          group_label: string | null
           id: string
           instructions: string | null
           manual_finish: boolean
@@ -206,6 +209,7 @@ export type Database = {
           notes: string | null
           order_index: number
           reps: number
+          rest_seconds: number | null
           session_id: string
           sets: number
           weight_kg: number | null
@@ -214,6 +218,9 @@ export type Database = {
         Insert: {
           created_at?: string
           duration_seconds?: number | null
+          group_color?: string | null
+          group_id?: string | null
+          group_label?: string | null
           id?: string
           instructions?: string | null
           manual_finish?: boolean
@@ -221,6 +228,7 @@ export type Database = {
           notes?: string | null
           order_index?: number
           reps?: number
+          rest_seconds?: number | null
           session_id: string
           sets?: number
           weight_kg?: number | null
@@ -229,6 +237,9 @@ export type Database = {
         Update: {
           created_at?: string
           duration_seconds?: number | null
+          group_color?: string | null
+          group_id?: string | null
+          group_label?: string | null
           id?: string
           instructions?: string | null
           manual_finish?: boolean
@@ -236,6 +247,7 @@ export type Database = {
           notes?: string | null
           order_index?: number
           reps?: number
+          rest_seconds?: number | null
           session_id?: string
           sets?: number
           weight_kg?: number | null
@@ -818,7 +830,9 @@ export type Database = {
       sessions: {
         Row: {
           created_at: string
+          day_index: number
           id: string
+          is_rest_day: boolean
           name: string
           notes: string | null
           programme_id: string
@@ -826,7 +840,9 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          day_index?: number
           id?: string
+          is_rest_day?: boolean
           name: string
           notes?: string | null
           programme_id: string
@@ -834,7 +850,9 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          day_index?: number
           id?: string
+          is_rest_day?: boolean
           name?: string
           notes?: string | null
           programme_id?: string
