@@ -270,7 +270,7 @@ export async function fetchTodaysSessionForAthlete(): Promise<DBSession | null> 
     supabase
       .from("sessions")
       .select(
-        "id, name, session_date, notes, programme_id, programmes(name), exercises(id, name, sets, reps, weight_kg, order_index, notes, session_id, instructions, manual_finish, duration_seconds)",
+        "id, name, session_date, notes, programme_id, programmes(name), exercises(id, name, sets, reps, weight_kg, order_index, notes, session_id, instructions, manual_finish, duration_seconds, group_id, group_label, group_color, rest_seconds)",
       )
       .gte("session_date", today)
       .order("session_date", { ascending: true })
@@ -303,7 +303,7 @@ export async function fetchUpcomingSessionsForAthlete(limit = 5): Promise<DBSess
     supabase
       .from("sessions")
       .select(
-        "id, name, session_date, notes, programme_id, programmes(name), exercises(id, name, sets, reps, weight_kg, order_index, notes, session_id, instructions, manual_finish, duration_seconds)",
+        "id, name, session_date, notes, programme_id, programmes(name), exercises(id, name, sets, reps, weight_kg, order_index, notes, session_id, instructions, manual_finish, duration_seconds, group_id, group_label, group_color, rest_seconds)",
       )
       .gte("session_date", today)
       .order("session_date", { ascending: true })
