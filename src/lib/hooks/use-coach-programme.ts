@@ -14,6 +14,10 @@ export type DBExercise = {
   instructions: string | null;
   manual_finish: boolean;
   duration_seconds: number | null;
+  group_id: string | null;
+  group_label: string | null;
+  group_color: string | null;
+  rest_seconds: number | null;
 };
 
 export type DBSession = {
@@ -22,6 +26,8 @@ export type DBSession = {
   session_date: string;
   notes: string | null;
   programme_id: string;
+  is_rest_day: boolean;
+  day_index: number;
   exercises: DBExercise[];
 };
 
