@@ -357,9 +357,22 @@ function WorkoutPage() {
                   : null;
             return (
               <div key={ex.id} className="bg-card rounded-2xl border shadow-sm overflow-hidden">
-                <div className="flex items-center justify-between p-4 border-b bg-secondary/40">
-                  <div>
-                    <div className="font-display text-lg leading-none">{ex.name}</div>
+                <div className="flex items-start justify-between gap-2 p-4 border-b bg-secondary/40">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <div className="font-display text-lg leading-none truncate">{ex.name}</div>
+                      {isValidYouTubeUrl(ex.video_url) && (
+                        <button
+                          type="button"
+                          onClick={() => setVideoFor(ex)}
+                          aria-label={`Play demo for ${ex.name}`}
+                          className="shrink-0 h-7 w-7 rounded-full bg-rose-600 text-white flex items-center justify-center hover:bg-rose-700"
+                          title="Play demo video"
+                        >
+                          <Play className="h-3.5 w-3.5" fill="currentColor" />
+                        </button>
+                      )}
+                    </div>
                     <div className="text-[11px] text-muted-foreground mt-1 flex flex-wrap gap-x-2">
                       {isStrength ? (
                         <span>
@@ -379,6 +392,11 @@ function WorkoutPage() {
                       {meta.rep_step ? (
                         <span>
                           Step-down: <span className="font-bold">−{meta.rep_step}/set</span>
+                        </span>
+                      ) : null}
+                      {ex.rest_seconds ? (
+                        <span>
+                          Rest: <span className="font-bold">{ex.rest_seconds}s</span>
                         </span>
                       ) : null}
                     </div>
