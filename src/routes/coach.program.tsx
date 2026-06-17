@@ -431,6 +431,7 @@ function ProgramPage() {
                   <Plus className="h-3 w-3" /> Add exercise
                 </button>
               </div>
+              </>
             )}
           </div>
         )}
