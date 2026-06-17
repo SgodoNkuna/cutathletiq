@@ -49,6 +49,10 @@ function WorkoutPage() {
   const [prs, setPRs] = React.useState<Record<string, number>>({}); // exercise_name -> max kg
   const [askRPE, setAskRPE] = React.useState(false);
   const [saving, setSaving] = React.useState(false);
+  const [rest, setRest] = React.useState<{ key: string; seconds: number; label: string } | null>(
+    null,
+  );
+  const [videoFor, setVideoFor] = React.useState<DBExercise | null>(null);
 
   // Load today's session + athlete's existing PRs
   React.useEffect(() => {
