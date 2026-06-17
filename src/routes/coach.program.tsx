@@ -13,7 +13,10 @@ import {
   ArrowUp,
   ArrowDown,
   Timer,
+  Youtube,
+  Repeat,
 } from "lucide-react";
+import { isValidYouTubeUrl } from "@/lib/youtube";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { useCoachProgramme, type DBExercise } from "@/lib/hooks/use-coach-programme";
