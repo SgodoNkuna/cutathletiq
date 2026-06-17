@@ -493,6 +493,19 @@ function WorkoutPage() {
         </button>
       </div>
       <RPEModal open={askRPE} onSubmit={submitRPE} />
+      {rest && (
+        <RestTimer
+          key={rest.key}
+          seconds={rest.seconds}
+          label={rest.label}
+          onDone={() => setRest(null)}
+        />
+      )}
+      <YouTubeSheet
+        url={videoFor?.video_url ?? null}
+        title={videoFor?.name}
+        onClose={() => setVideoFor(null)}
+      />
     </MobileFrame>
   );
 }
