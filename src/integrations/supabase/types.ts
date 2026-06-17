@@ -212,6 +212,7 @@ export type Database = {
           rest_seconds: number | null
           session_id: string
           sets: number
+          video_url: string | null
           weight_kg: number | null
           weight_pct: number | null
         }
@@ -231,6 +232,7 @@ export type Database = {
           rest_seconds?: number | null
           session_id: string
           sets?: number
+          video_url?: string | null
           weight_kg?: number | null
           weight_pct?: number | null
         }
@@ -250,6 +252,7 @@ export type Database = {
           rest_seconds?: number | null
           session_id?: string
           sets?: number
+          video_url?: string | null
           weight_kg?: number | null
           weight_pct?: number | null
         }
@@ -829,9 +832,12 @@ export type Database = {
       }
       sessions: {
         Row: {
+          circuit_rest_seconds: number
+          circuit_rounds: number
           created_at: string
           day_index: number
           id: string
+          is_circuit: boolean
           is_rest_day: boolean
           name: string
           notes: string | null
@@ -839,9 +845,12 @@ export type Database = {
           session_date: string
         }
         Insert: {
+          circuit_rest_seconds?: number
+          circuit_rounds?: number
           created_at?: string
           day_index?: number
           id?: string
+          is_circuit?: boolean
           is_rest_day?: boolean
           name: string
           notes?: string | null
@@ -849,9 +858,12 @@ export type Database = {
           session_date: string
         }
         Update: {
+          circuit_rest_seconds?: number
+          circuit_rounds?: number
           created_at?: string
           day_index?: number
           id?: string
+          is_circuit?: boolean
           is_rest_day?: boolean
           name?: string
           notes?: string | null
