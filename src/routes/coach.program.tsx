@@ -13,7 +13,10 @@ import {
   ArrowUp,
   ArrowDown,
   Timer,
+  Youtube,
+  Repeat,
 } from "lucide-react";
+import { isValidYouTubeUrl } from "@/lib/youtube";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { useCoachProgramme, type DBExercise } from "@/lib/hooks/use-coach-programme";
@@ -323,7 +326,65 @@ function ProgramPage() {
                 </div>
               </div>
             ) : (
-              <div className="p-2 space-y-2">
+              <>
+                {/* Circuit-mode toolbar */}
+                <div className="flex flex-wrap items-center gap-2 px-3 py-2 border-b bg-secondary/20">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      updateSession(active.id, { is_circuit: !active.is_circuit })
+                    }
+                    aria-pressed={active.is_circuit}
+                    className={
+                      "flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider rounded-full px-2.5 py-1 border transition-colors " +
+                      (active.is_circuit
+                        ? "bg-emerald-600 text-white border-emerald-600"
+                        : "bg-card text-muted-foreground border-border hover:text-foreground")
+                    }
+                    title="Athletes complete all exercises back-to-back, then rest"
+                  >
+                    <Repeat className="h-3 w-3" /> Circuit
+                  </button>
+                  {active.is_circuit && (
+                    <>
+                      <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">
+                        Rounds
+                        <input
+                          type="number"
+                          min={1}
+                          max={20}
+                          value={active.circuit_rounds}
+                          onChange={(e) =>
+                            updateSession(active.id, {
+                              circuit_rounds: Math.max(1, Math.min(20, +e.target.value || 1)),
+                            })
+                          }
+                          className="ml-1 w-12 text-center text-xs font-bold bg-secondary rounded-md py-1"
+                        />
+                      </label>
+                      <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">
+                        Rest s
+                        <input
+                          type="number"
+                          min={0}
+                          max={600}
+                          step={5}
+                          value={active.circuit_rest_seconds}
+                          onChange={(e) =>
+                            updateSession(active.id, {
+                              circuit_rest_seconds: Math.max(0, Math.min(600, +e.target.value || 0)),
+                            })
+                          }
+                          className="ml-1 w-14 text-center text-xs font-bold bg-secondary rounded-md py-1"
+                        />
+                      </label>
+                      <span className="text-[10px] text-muted-foreground">
+                        between rounds
+                      </span>
+                    </>
+                  )}
+                </div>
+                <div className="p-2 space-y-2">
                 {groups.length === 0 && (
                   <div className="text-[11px] text-destructive font-bold px-2 py-1">
                     ⚠ Add at least one drill or this day can't be published.
@@ -370,6 +431,7 @@ function ProgramPage() {
                   <Plus className="h-3 w-3" /> Add exercise
                 </button>
               </div>
+              </>
             )}
           </div>
         )}
@@ -627,6 +689,35 @@ function ExerciseRow({
           placeholder="Add coaching cues, technique notes, or setup instructions."
           className="w-full text-[11px] bg-secondary/60 rounded-md px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-gold resize-none"
         />
+      </div>
+
+      <div className="pl-6">
+        <div className="flex items-center gap-1.5 rounded-md bg-secondary/60 px-2 py-1.5 focus-within:ring-1 focus-within:ring-gold">
+          <Youtube
+            className={
+              "h-3.5 w-3.5 shrink-0 " +
+              (x.video_url
+                ? isValidYouTubeUrl(x.video_url)
+                  ? "text-rose-600"
+                  : "text-destructive"
+                : "text-muted-foreground")
+            }
+          />
+          <input
+            value={x.video_url ?? ""}
+            onChange={(e) =>
+              updateExercise(x.id, sessionId, {
+                video_url: e.target.value.trim() || null,
+              })
+            }
+            maxLength={300}
+            placeholder="YouTube demo URL (optional)"
+            className="flex-1 min-w-0 bg-transparent text-[11px] focus:outline-none"
+          />
+          {x.video_url && !isValidYouTubeUrl(x.video_url) && (
+            <span className="text-[9px] font-bold text-destructive uppercase">Invalid</span>
+          )}
+        </div>
       </div>
 
       <div className="pl-6 flex items-center gap-1 flex-wrap">

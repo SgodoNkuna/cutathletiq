@@ -18,6 +18,7 @@ export type DBExercise = {
   group_label: string | null;
   group_color: string | null;
   rest_seconds: number | null;
+  video_url: string | null;
 };
 
 export type DBSession = {
@@ -28,6 +29,9 @@ export type DBSession = {
   programme_id: string;
   is_rest_day: boolean;
   day_index: number;
+  is_circuit: boolean;
+  circuit_rounds: number;
+  circuit_rest_seconds: number;
   exercises: DBExercise[];
 };
 
@@ -57,7 +61,7 @@ export function useCoachProgramme(coachId: string | null, teamId: string | null)
     const { data: programmes, error } = await supabase
       .from("programmes")
       .select(
-        "id, name, sport, team_id, coach_id, start_date, end_date, sessions(id, name, session_date, notes, programme_id, is_rest_day, day_index, exercises(id, name, sets, reps, weight_kg, order_index, notes, session_id, instructions, manual_finish, duration_seconds, group_id, group_label, group_color, rest_seconds))",
+        "id, name, sport, team_id, coach_id, start_date, end_date, sessions(id, name, session_date, notes, programme_id, is_rest_day, day_index, is_circuit, circuit_rounds, circuit_rest_seconds, exercises(id, name, sets, reps, weight_kg, order_index, notes, session_id, instructions, manual_finish, duration_seconds, group_id, group_label, group_color, rest_seconds, video_url))",
       )
       .eq("coach_id", coachId)
       .order("created_at", { ascending: false })
@@ -106,7 +110,7 @@ export function useCoachProgramme(coachId: string | null, teamId: string | null)
     const { data, error } = await supabase
       .from("sessions")
       .insert({ programme_id: programme.id, session_date: date, name, day_index: nextDayIndex })
-      .select("id, name, session_date, notes, programme_id, is_rest_day, day_index")
+      .select("id, name, session_date, notes, programme_id, is_rest_day, day_index, is_circuit, circuit_rounds, circuit_rest_seconds")
       .single();
     setSaving(false);
     if (error || !data) {
@@ -129,7 +133,7 @@ export function useCoachProgramme(coachId: string | null, teamId: string | null)
 
   const updateSession = async (
     sessionId: string,
-    patch: Partial<Pick<DBSession, "name" | "session_date" | "is_rest_day" | "day_index">>,
+    patch: Partial<Pick<DBSession, "name" | "session_date" | "is_rest_day" | "day_index" | "is_circuit" | "circuit_rounds" | "circuit_rest_seconds">>,
   ) => {
     setProgramme((p) =>
       p
@@ -151,7 +155,7 @@ export function useCoachProgramme(coachId: string | null, teamId: string | null)
       .from("exercises")
       .insert({ session_id: sessionId, name: "New exercise", sets: 3, reps: 8, order_index: order })
       .select(
-        "id, name, sets, reps, weight_kg, order_index, notes, session_id, instructions, manual_finish, duration_seconds, group_id, group_label, group_color, rest_seconds",
+        "id, name, sets, reps, weight_kg, order_index, notes, session_id, instructions, manual_finish, duration_seconds, group_id, group_label, group_color, rest_seconds, video_url",
       )
       .single();
     if (error || !data) {
@@ -189,6 +193,7 @@ export function useCoachProgramme(coachId: string | null, teamId: string | null)
         | "group_label"
         | "group_color"
         | "rest_seconds"
+        | "video_url"
       >
     >,
   ) => {
@@ -270,7 +275,7 @@ export async function fetchTodaysSessionForAthlete(): Promise<DBSession | null> 
     supabase
       .from("sessions")
       .select(
-        "id, name, session_date, notes, programme_id, programmes(name), is_rest_day, day_index, exercises(id, name, sets, reps, weight_kg, order_index, notes, session_id, instructions, manual_finish, duration_seconds, group_id, group_label, group_color, rest_seconds)",
+        "id, name, session_date, notes, programme_id, programmes(name), is_rest_day, day_index, is_circuit, circuit_rounds, circuit_rest_seconds, exercises(id, name, sets, reps, weight_kg, order_index, notes, session_id, instructions, manual_finish, duration_seconds, group_id, group_label, group_color, rest_seconds, video_url)",
       )
       .gte("session_date", today)
       .order("session_date", { ascending: true })
@@ -303,7 +308,7 @@ export async function fetchUpcomingSessionsForAthlete(limit = 5): Promise<DBSess
     supabase
       .from("sessions")
       .select(
-        "id, name, session_date, notes, programme_id, programmes(name), is_rest_day, day_index, exercises(id, name, sets, reps, weight_kg, order_index, notes, session_id, instructions, manual_finish, duration_seconds, group_id, group_label, group_color, rest_seconds)",
+        "id, name, session_date, notes, programme_id, programmes(name), is_rest_day, day_index, is_circuit, circuit_rounds, circuit_rest_seconds, exercises(id, name, sets, reps, weight_kg, order_index, notes, session_id, instructions, manual_finish, duration_seconds, group_id, group_label, group_color, rest_seconds, video_url)",
       )
       .gte("session_date", today)
       .order("session_date", { ascending: true })

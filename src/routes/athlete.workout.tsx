@@ -5,7 +5,10 @@ import { MobileFrame } from "@/components/MobileFrame";
 import { PRBadge } from "@/components/primitives";
 import { RPEModal } from "@/components/RPEModal";
 import { cn } from "@/lib/utils";
-import { Check, Plus, Minus, Loader2 } from "lucide-react";
+import { Check, Plus, Minus, Loader2, Play, Repeat } from "lucide-react";
+import { RestTimer } from "@/components/RestTimer";
+import { YouTubeSheet } from "@/components/YouTubeSheet";
+import { isValidYouTubeUrl } from "@/lib/youtube";
 import { toast } from "sonner";
 import { rpeSchema } from "@/lib/sanitize";
 import { useAuth } from "@/lib/auth-context";
@@ -46,6 +49,10 @@ function WorkoutPage() {
   const [prs, setPRs] = React.useState<Record<string, number>>({}); // exercise_name -> max kg
   const [askRPE, setAskRPE] = React.useState(false);
   const [saving, setSaving] = React.useState(false);
+  const [rest, setRest] = React.useState<{ key: string; seconds: number; label: string } | null>(
+    null,
+  );
+  const [videoFor, setVideoFor] = React.useState<DBExercise | null>(null);
 
   // Load today's session + athlete's existing PRs
   React.useEffect(() => {
@@ -130,12 +137,34 @@ function WorkoutPage() {
     })
     .filter(Boolean) as { name: string; weight: number }[];
 
+  /**
+   * Start a rest after a completed set, honouring superset/circuit rules:
+   *  - Superset members: no rest between A→B; rest after the LAST member only.
+   *  - Circuit session: no per-set rest; rest only after finishing a full round.
+   *  - Otherwise: rest = exercise rest_seconds (skip if 0/null).
+   */
+  const triggerRestAfter = (ei: number, si: number) => {
+    if (!session) return;
+    if (session.is_circuit) return; // round-level rest handled separately
+    const ex = session.exercises[ei];
+    if (!ex) return;
+    // If exercise is in a group and has a same-group sibling after it, skip rest.
+    if (ex.group_id) {
+      const after = session.exercises.slice(ei + 1).find((e) => e.group_id === ex.group_id);
+      if (after) return;
+    }
+    const secs = ex.rest_seconds ?? 0;
+    if (secs <= 0) return;
+    setRest({ key: `${ex.id}-${si}-${Date.now()}`, seconds: secs, label: `Next: ${ex.name}` });
+  };
+
   const updateSet = (ei: number, si: number, patch: Partial<SetState>) => {
     setState((prev) =>
       prev.map((sets, i) =>
         i === ei ? sets.map((s, j) => (j === si ? { ...s, ...patch } : s)) : sets,
       ),
     );
+    if (patch.done === true) triggerRestAfter(ei, si);
   };
 
   const toggleDrillDone = (ei: number, si: number) => {
@@ -147,7 +176,6 @@ function WorkoutPage() {
       const ex = session?.exercises[ei];
       const meta = metaFromRow(ex);
       const now = Date.now();
-      // Elapsed = configured duration as a sensible default; coaches can refine later.
       updateSet(ei, si, {
         done: true,
         doneAt: now,
@@ -296,6 +324,21 @@ function WorkoutPage() {
           </div>
         </div>
 
+        {session.is_circuit && (
+          <div className="mt-3 rounded-xl border-2 border-emerald-300 bg-emerald-50 p-3 flex items-center gap-2">
+            <Repeat className="h-4 w-4 text-emerald-700 shrink-0" />
+            <div className="min-w-0">
+              <div className="text-[11px] font-black uppercase tracking-wider text-emerald-800">
+                Circuit · {session.circuit_rounds} rounds
+              </div>
+              <div className="text-[10px] text-emerald-900/80">
+                Complete all exercises back-to-back, then rest {session.circuit_rest_seconds}s
+                between rounds.
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="space-y-4 mt-4">
           {session.exercises.map((ex, ei) => {
             const max = Math.max(
@@ -314,9 +357,22 @@ function WorkoutPage() {
                   : null;
             return (
               <div key={ex.id} className="bg-card rounded-2xl border shadow-sm overflow-hidden">
-                <div className="flex items-center justify-between p-4 border-b bg-secondary/40">
-                  <div>
-                    <div className="font-display text-lg leading-none">{ex.name}</div>
+                <div className="flex items-start justify-between gap-2 p-4 border-b bg-secondary/40">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <div className="font-display text-lg leading-none truncate">{ex.name}</div>
+                      {isValidYouTubeUrl(ex.video_url) && (
+                        <button
+                          type="button"
+                          onClick={() => setVideoFor(ex)}
+                          aria-label={`Play demo for ${ex.name}`}
+                          className="shrink-0 h-7 w-7 rounded-full bg-rose-600 text-white flex items-center justify-center hover:bg-rose-700"
+                          title="Play demo video"
+                        >
+                          <Play className="h-3.5 w-3.5" fill="currentColor" />
+                        </button>
+                      )}
+                    </div>
                     <div className="text-[11px] text-muted-foreground mt-1 flex flex-wrap gap-x-2">
                       {isStrength ? (
                         <span>
@@ -336,6 +392,11 @@ function WorkoutPage() {
                       {meta.rep_step ? (
                         <span>
                           Step-down: <span className="font-bold">−{meta.rep_step}/set</span>
+                        </span>
+                      ) : null}
+                      {ex.rest_seconds ? (
+                        <span>
+                          Rest: <span className="font-bold">{ex.rest_seconds}s</span>
                         </span>
                       ) : null}
                     </div>
@@ -432,6 +493,19 @@ function WorkoutPage() {
         </button>
       </div>
       <RPEModal open={askRPE} onSubmit={submitRPE} />
+      {rest && (
+        <RestTimer
+          key={rest.key}
+          seconds={rest.seconds}
+          label={rest.label}
+          onDone={() => setRest(null)}
+        />
+      )}
+      <YouTubeSheet
+        url={videoFor?.video_url ?? null}
+        title={videoFor?.name}
+        onClose={() => setVideoFor(null)}
+      />
     </MobileFrame>
   );
 }
