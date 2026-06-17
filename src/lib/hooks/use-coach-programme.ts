@@ -18,6 +18,7 @@ export type DBExercise = {
   group_label: string | null;
   group_color: string | null;
   rest_seconds: number | null;
+  video_url: string | null;
 };
 
 export type DBSession = {
@@ -28,6 +29,9 @@ export type DBSession = {
   programme_id: string;
   is_rest_day: boolean;
   day_index: number;
+  is_circuit: boolean;
+  circuit_rounds: number;
+  circuit_rest_seconds: number;
   exercises: DBExercise[];
 };
 
