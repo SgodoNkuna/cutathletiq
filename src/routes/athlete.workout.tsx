@@ -137,12 +137,34 @@ function WorkoutPage() {
     })
     .filter(Boolean) as { name: string; weight: number }[];
 
+  /**
+   * Start a rest after a completed set, honouring superset/circuit rules:
+   *  - Superset members: no rest between A→B; rest after the LAST member only.
+   *  - Circuit session: no per-set rest; rest only after finishing a full round.
+   *  - Otherwise: rest = exercise rest_seconds (skip if 0/null).
+   */
+  const triggerRestAfter = (ei: number, si: number) => {
+    if (!session) return;
+    if (session.is_circuit) return; // round-level rest handled separately
+    const ex = session.exercises[ei];
+    if (!ex) return;
+    // If exercise is in a group and has a same-group sibling after it, skip rest.
+    if (ex.group_id) {
+      const after = session.exercises.slice(ei + 1).find((e) => e.group_id === ex.group_id);
+      if (after) return;
+    }
+    const secs = ex.rest_seconds ?? 0;
+    if (secs <= 0) return;
+    setRest({ key: `${ex.id}-${si}-${Date.now()}`, seconds: secs, label: `Next: ${ex.name}` });
+  };
+
   const updateSet = (ei: number, si: number, patch: Partial<SetState>) => {
     setState((prev) =>
       prev.map((sets, i) =>
         i === ei ? sets.map((s, j) => (j === si ? { ...s, ...patch } : s)) : sets,
       ),
     );
+    if (patch.done === true) triggerRestAfter(ei, si);
   };
 
   const toggleDrillDone = (ei: number, si: number) => {
@@ -154,7 +176,6 @@ function WorkoutPage() {
       const ex = session?.exercises[ei];
       const meta = metaFromRow(ex);
       const now = Date.now();
-      // Elapsed = configured duration as a sensible default; coaches can refine later.
       updateSet(ei, si, {
         done: true,
         doneAt: now,
