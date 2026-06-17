@@ -324,6 +324,21 @@ function WorkoutPage() {
           </div>
         </div>
 
+        {session.is_circuit && (
+          <div className="mt-3 rounded-xl border-2 border-emerald-300 bg-emerald-50 p-3 flex items-center gap-2">
+            <Repeat className="h-4 w-4 text-emerald-700 shrink-0" />
+            <div className="min-w-0">
+              <div className="text-[11px] font-black uppercase tracking-wider text-emerald-800">
+                Circuit · {session.circuit_rounds} rounds
+              </div>
+              <div className="text-[10px] text-emerald-900/80">
+                Complete all exercises back-to-back, then rest {session.circuit_rest_seconds}s
+                between rounds.
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="space-y-4 mt-4">
           {session.exercises.map((ex, ei) => {
             const max = Math.max(
