@@ -193,6 +193,7 @@ export function useCoachProgramme(coachId: string | null, teamId: string | null)
         | "group_label"
         | "group_color"
         | "rest_seconds"
+        | "video_url"
       >
     >,
   ) => {
