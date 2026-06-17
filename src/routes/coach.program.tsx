@@ -691,6 +691,35 @@ function ExerciseRow({
         />
       </div>
 
+      <div className="pl-6">
+        <div className="flex items-center gap-1.5 rounded-md bg-secondary/60 px-2 py-1.5 focus-within:ring-1 focus-within:ring-gold">
+          <Youtube
+            className={
+              "h-3.5 w-3.5 shrink-0 " +
+              (x.video_url
+                ? isValidYouTubeUrl(x.video_url)
+                  ? "text-rose-600"
+                  : "text-destructive"
+                : "text-muted-foreground")
+            }
+          />
+          <input
+            value={x.video_url ?? ""}
+            onChange={(e) =>
+              updateExercise(x.id, sessionId, {
+                video_url: e.target.value.trim() || null,
+              })
+            }
+            maxLength={300}
+            placeholder="YouTube demo URL (optional)"
+            className="flex-1 min-w-0 bg-transparent text-[11px] focus:outline-none"
+          />
+          {x.video_url && !isValidYouTubeUrl(x.video_url) && (
+            <span className="text-[9px] font-bold text-destructive uppercase">Invalid</span>
+          )}
+        </div>
+      </div>
+
       <div className="pl-6 flex items-center gap-1 flex-wrap">
         <span className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
           Preview:
