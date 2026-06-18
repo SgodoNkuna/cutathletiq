@@ -109,26 +109,12 @@ function ProgramPage() {
     toast.success("Programme is live — athletes have been notified.");
   };
 
-  if (loading || !programme) {
-    return (
-      <MobileFrame title="Program Builder">
-        <div className="px-5 py-12 flex items-center justify-center">
-          <Loader2 className="h-6 w-6 animate-spin text-gold" />
-        </div>
-      </MobileFrame>
-    );
-  }
-
-  const sessions = programme.sessions;
+  const sessions = programme?.sessions ?? [];
   const safeIdx = Math.min(activeIdx, Math.max(sessions.length - 1, 0));
   const active = sessions[safeIdx];
 
-  const publishCheck = validateProgrammeForPublish({
-    sessions: sessions.filter((s) => !s.is_rest_day),
-  });
-  const canPublish = !!teamId && publishCheck.ok;
-
-  // Group exercises in active session: keep stable order; rows are grouped by group_id.
+  // Group exercises in active session — declared before any early return so
+  // hook order stays stable across loading/loaded renders (React error #310).
   const groups = React.useMemo(() => {
     if (!active) return [];
     const out: Array<{ id: string | null; label: string | null; color: string | null; items: DBExercise[] }> = [];
@@ -148,6 +134,21 @@ function ProgramPage() {
     }
     return out;
   }, [active]);
+
+  if (loading || !programme) {
+    return (
+      <MobileFrame title="Program Builder">
+        <div className="px-5 py-12 flex items-center justify-center">
+          <Loader2 className="h-6 w-6 animate-spin text-gold" />
+        </div>
+      </MobileFrame>
+    );
+  }
+
+  const publishCheck = validateProgrammeForPublish({
+    sessions: sessions.filter((s) => !s.is_rest_day),
+  });
+  const canPublish = !!teamId && publishCheck.ok;
 
   const usedLabels = new Set<string>();
   const usedColors = new Set<string>();
