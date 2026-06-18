@@ -425,12 +425,20 @@ function ProgramPage() {
                     ))}
                   </div>
                 ))}
-                <button
-                  onClick={() => addExercise(active.id)}
-                  className="w-full rounded-lg border-2 border-dashed border-border py-2.5 text-xs font-bold text-muted-foreground hover:border-gold hover:text-gold flex items-center justify-center gap-1"
-                >
-                  <Plus className="h-3 w-3" /> Add exercise
-                </button>
+                <div className="grid grid-cols-2 gap-1.5">
+                  <button
+                    onClick={() => setPickerOpen(true)}
+                    className="rounded-lg border-2 border-gold bg-gold/10 py-2.5 text-xs font-bold text-navy-deep hover:bg-gold hover:text-navy-deep flex items-center justify-center gap-1"
+                  >
+                    <Dumbbell className="h-3 w-3" /> From library
+                  </button>
+                  <button
+                    onClick={() => addExercise(active.id)}
+                    className="rounded-lg border-2 border-dashed border-border py-2.5 text-xs font-bold text-muted-foreground hover:border-gold hover:text-gold flex items-center justify-center gap-1"
+                  >
+                    <Plus className="h-3 w-3" /> Blank
+                  </button>
+                </div>
               </div>
               </>
             )}
