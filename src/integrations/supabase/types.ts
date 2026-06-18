@@ -195,6 +195,57 @@ export type Database = {
           },
         ]
       }
+      exercise_templates: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string | null
+          default_reps: number
+          default_rest_seconds: number
+          default_sets: number
+          equipment: string | null
+          id: string
+          instructions: string | null
+          is_global: boolean
+          muscle_groups: string[]
+          name: string
+          updated_at: string
+          video_url: string | null
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          default_reps?: number
+          default_rest_seconds?: number
+          default_sets?: number
+          equipment?: string | null
+          id?: string
+          instructions?: string | null
+          is_global?: boolean
+          muscle_groups?: string[]
+          name: string
+          updated_at?: string
+          video_url?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          default_reps?: number
+          default_rest_seconds?: number
+          default_sets?: number
+          equipment?: string | null
+          id?: string
+          instructions?: string | null
+          is_global?: boolean
+          muscle_groups?: string[]
+          name?: string
+          updated_at?: string
+          video_url?: string | null
+        }
+        Relationships: []
+      }
       exercises: {
         Row: {
           created_at: string
@@ -1343,6 +1394,8 @@ export type Database = {
         Args: { _game_id: string; _rows: Json }
         Returns: number
       }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
       team_completion_stats: {
         Args: { _from: string; _to: string }
         Returns: {
