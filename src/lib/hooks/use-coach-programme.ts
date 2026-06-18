@@ -147,13 +147,31 @@ export function useCoachProgramme(coachId: string | null, teamId: string | null)
     if (error) toast.error("Save failed");
   };
 
-  const addExercise = async (sessionId: string) => {
+  const addExercise = async (
+    sessionId: string,
+    prefill?: Partial<
+      Pick<
+        DBExercise,
+        "name" | "sets" | "reps" | "rest_seconds" | "instructions" | "video_url" | "notes"
+      >
+    >,
+  ) => {
     const session = programme?.sessions.find((s) => s.id === sessionId);
     if (!session) return;
     const order = session.exercises.length;
     const { data, error } = await supabase
       .from("exercises")
-      .insert({ session_id: sessionId, name: "New exercise", sets: 3, reps: 8, order_index: order })
+      .insert({
+        session_id: sessionId,
+        name: prefill?.name ?? "New exercise",
+        sets: prefill?.sets ?? 3,
+        reps: prefill?.reps ?? 8,
+        rest_seconds: prefill?.rest_seconds ?? null,
+        instructions: prefill?.instructions ?? null,
+        video_url: prefill?.video_url ?? null,
+        notes: prefill?.notes ?? null,
+        order_index: order,
+      })
       .select(
         "id, name, sets, reps, weight_kg, order_index, notes, session_id, instructions, manual_finish, duration_seconds, group_id, group_label, group_color, rest_seconds, video_url",
       )

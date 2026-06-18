@@ -1,6 +1,7 @@
 import * as React from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { MobileFrame } from "@/components/MobileFrame";
+import { ExerciseTemplatePicker } from "@/components/ExerciseTemplatePicker";
 import {
   Plus,
   Trash2,
@@ -15,6 +16,7 @@ import {
   Timer,
   Youtube,
   Repeat,
+  Dumbbell,
 } from "lucide-react";
 import { isValidYouTubeUrl } from "@/lib/youtube";
 import { toast } from "sonner";
@@ -85,6 +87,7 @@ function ProgramPage() {
   } = useCoachProgramme(coachId, teamId);
 
   const [activeIdx, setActiveIdx] = React.useState(0);
+  const [pickerOpen, setPickerOpen] = React.useState(false);
 
   const handleAddSession = () => {
     const next = new Date();
@@ -425,12 +428,20 @@ function ProgramPage() {
                     ))}
                   </div>
                 ))}
-                <button
-                  onClick={() => addExercise(active.id)}
-                  className="w-full rounded-lg border-2 border-dashed border-border py-2.5 text-xs font-bold text-muted-foreground hover:border-gold hover:text-gold flex items-center justify-center gap-1"
-                >
-                  <Plus className="h-3 w-3" /> Add exercise
-                </button>
+                <div className="grid grid-cols-2 gap-1.5">
+                  <button
+                    onClick={() => setPickerOpen(true)}
+                    className="rounded-lg border-2 border-gold bg-gold/10 py-2.5 text-xs font-bold text-navy-deep hover:bg-gold hover:text-navy-deep flex items-center justify-center gap-1"
+                  >
+                    <Dumbbell className="h-3 w-3" /> From library
+                  </button>
+                  <button
+                    onClick={() => addExercise(active.id)}
+                    className="rounded-lg border-2 border-dashed border-border py-2.5 text-xs font-bold text-muted-foreground hover:border-gold hover:text-gold flex items-center justify-center gap-1"
+                  >
+                    <Plus className="h-3 w-3" /> Blank
+                  </button>
+                </div>
               </div>
               </>
             )}
@@ -453,6 +464,13 @@ function ProgramPage() {
           Changes save automatically as you type.
         </div>
       </div>
+      <ExerciseTemplatePicker
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        onPick={(prefill) => {
+          if (active) void addExercise(active.id, prefill);
+        }}
+      />
     </MobileFrame>
   );
 }
