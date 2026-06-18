@@ -1,6 +1,7 @@
 import * as React from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { MobileFrame } from "@/components/MobileFrame";
+import { ExerciseTemplatePicker } from "@/components/ExerciseTemplatePicker";
 import {
   Plus,
   Trash2,
@@ -15,6 +16,7 @@ import {
   Timer,
   Youtube,
   Repeat,
+  Dumbbell,
 } from "lucide-react";
 import { isValidYouTubeUrl } from "@/lib/youtube";
 import { toast } from "sonner";
