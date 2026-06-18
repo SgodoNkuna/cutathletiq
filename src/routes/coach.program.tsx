@@ -87,6 +87,7 @@ function ProgramPage() {
   } = useCoachProgramme(coachId, teamId);
 
   const [activeIdx, setActiveIdx] = React.useState(0);
+  const [pickerOpen, setPickerOpen] = React.useState(false);
 
   const handleAddSession = () => {
     const next = new Date();
