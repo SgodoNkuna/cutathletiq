@@ -464,6 +464,13 @@ function ProgramPage() {
           Changes save automatically as you type.
         </div>
       </div>
+      <ExerciseTemplatePicker
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        onPick={(prefill) => {
+          if (active) void addExercise(active.id, prefill);
+        }}
+      />
     </MobileFrame>
   );
 }
